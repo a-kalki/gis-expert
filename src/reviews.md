@@ -7,6 +7,8 @@
 
 Сейчас я работаю AI-разработчиком в **Freedom Broker**. Курсы Нурболата стали для меня отличной базой и помогли уверенно начать карьеру.
 
+Мой профиль в [linkedin](https://www.linkedin.com/in/%D0%B0%D0%B7%D0%B0%D1%82-%D0%BA%D1%83%D0%B0%D0%BD-7ab63037a?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app)
+
 ---
 ### Асет Кадыржанов
 Я, Асет Кадыржанов, Senior Frontend-разработчик.
