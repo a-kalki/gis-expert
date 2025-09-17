@@ -19,7 +19,7 @@
       position: relative;
     }
     .footer-rights {
-      max-width: 70%;   /* немного уже, чтобы не пересекалось */
+      max-width: 70%;  /* немного уже, чтобы не пересекалось */
       text-align: center;
       margin: 0 auto;
     }
@@ -29,7 +29,7 @@
     }
     #toTopBtn {
       position: absolute;
-      right: 10px;              /* прижать к правому краю */
+      right: 10px;           /* прижать к правому краю */
       top: 50%;
       transform: translateY(-50%);
       width: 36px;
@@ -46,7 +46,24 @@
       background: #555;
     }
     h1, h2, h3 { font-weight: 500; }
-    .tabs { margin-top: 32px; }
+    .tabs {
+      margin: 32px 0px;
+    }
+    .tablink {
+      transition: background-color 0.3s, color 0.3s;
+    }
+    .tablink:hover {
+      background-color: #555 !important;
+      color: #fff !important;
+    }
+
+    .tablink.w3-white {
+      cursor: default;
+    }
+
+    .tablink:not(.w3-white) {
+      cursor: pointer;
+    }
     @media (max-width: 600px) {
       h1 { font-size: 1.8em; }
       h2 { font-size: 1.4em; }
@@ -56,24 +73,21 @@
 </head>
 <body>
 
-<!-- Header -->
 <header class="w3-container w3-center w3-padding-32 w3-black">
   <h1>Добро пожаловать в мир IT</h1>
   <p>Здесь становятся программистами!</p>
 </header>
 
-<!-- Tabs -->
 <div class="tabs w3-bar w3-black w3-center">
-  <button class="w3-bar-item w3-button tablink w3-white" onclick="openTab(event,'courses')">Курсы</button>
-  <button class="w3-bar-item w3-button tablink" onclick="openTab(event,'python')">Python</button>
-  <button class="w3-bar-item w3-button tablink" onclick="openTab(event,'ts')">TS</button>
+  <button class="w3-bar-item w3-button tablink w3-white" data-tabname="about-of-course" onclick="openTab(event,'about-of-course')">О курсах</button>
+  <button class="w3-bar-item w3-button tablink" data-tabname="reviews" onclick="openTab(event,'reviews')">Отзывы</button>
+  <button class="w3-bar-item w3-button tablink" data-tabname="python" onclick="openTab(event,'python')">Python</button>
+  <button class="w3-bar-item w3-button tablink" data-tabname="ts" onclick="openTab(event,'ts')">TS</button>
+  <button class="w3-bar-item w3-button tablink" data-tabname="behind-the-scenes" onclick="openTab(event,'behind-the-scenes')">За кулисами</button>
+  <button class="w3-bar-item w3-button tablink" data-tabname="contacts" onclick="openTab(event,'contacts')">Контакты</button>
 </div>
 
-<!-- Content Tabs -->
-<div id="courses" class="tabcontent" style="display:block">
-  <!-- Весь твой текущий контент -->
-  
-  <!-- Content -->
+<div id="about-of-course" class="tabcontent" style="display:block">
   <div class="w3-container w3-padding-32 w3-white">
     <h1>Привет. Я Нурболат</h1>
     <p>Я не люблю пафосные продающие тексты. Люблю говорить просто, как есть.</p>
@@ -196,19 +210,99 @@
       <li><b>Нет официального сертификата</b> — это менторство, а не формальное обучение с документами.</li>
     </ul>
   </div>
+</div>
 
-  <div class="w3-container w3-padding-32 w3-white">
-    <h1>Контакты</h1>
+<div id="reviews" class="tabcontent" style="display:none">
+  <div class="w3-container w3-padding-32">
+    <h2>Отзывы</h2>
+    <h3>Азат</h3>
+    <p>Привет, меня зовут Азат, я из Уральска. С детства увлекался разработкой: начинал с Pawn, делал серверы для CS 1.6 и GTA SA-MP, позже перешёл на JavaScript и веб.</p>
+    <p>В колледже я прошёл курсы у Нурболата — мы разобрали основы, алгоритмы, паттерны, и даже сделали командный проект. После курсов мне удалось устроиться в американский стартап <b>ZenGuard</b>, где я занимался разработкой, тестированием, деплоем и работой с AI.</p>
+    <p>Сейчас я работаю AI-разработчиком в <b>Freedom Broker</b>. Курсы Нурболата стали для меня отличной базой и помогли уверенно начать карьеру.</p>
+    <hr>
+    <h3>Асет Кадыржанов</h3>
+    <p>Я, Асет Кадыржанов, Senior Frontend-разработчик.</p>
+    <p>В IT пришёл в 2020 году. Начинал как самоучка, но искал возможность войти в сферу. Тогда я познакомился с Нурболатом, который дал мне шанс попробовать себя в разработке на <b>Angular</b>. Этот опыт стал для меня отличной отправной точкой.</p>
+    <p>За время карьеры я успел поработать в четырёх компаниях, включая моё текущее место работы — <b>Alatau City Bank (ex Jusan Bank)</b>, а также в десяти стартапах. Сейчас моя основная ответственность в банке связана с продуктами кредитования. Я участвую в полном цикле разработки: от проектирования архитектуры до внедрения новых фич, работы с Angular (версии 19-20), CI/CD, релиз-менеджментом и инфраструктурой на AWS.</p>
+    <p>Мой доход составляет около <b>5000 долларов</b> в месяц (с учётом part-time проектов). Меня можно найти в LinkedIn под именем <a href="https://www.linkedin.com/in/asset-kadyrzhanov" target="_blank">Asset Kadyrzhanov</a>.</p>
+    <p>В завершение хочу отметить, что курсы Нурболата я настоятельно рекомендую. Мне довелось работать с ним напрямую и видеть, как он обучает студентов. Многие из них благодаря его подходу добились весомых результатов в IT.</p>
+    <hr>
+    <h3>Сагынгалиев Ренат</h3>
+    <p>Я, Сагынгалиев Ренат, разработчик с опытом работы в веб-разработке и специализацией на Angular и TypeScript.</p>
+    <p>В IT я пришёл, как и многие, с мечтой — зарабатывать хорошие деньги, сидя за компьютером. Но чем глубже я начал изучать программирование, тем сильнее понимал: IT — это не только про деньги, а про огромный мир, где всегда есть что изучать, что улучшать и куда расти.</p>
+    <p>Начинал я с курсов JavaScript у Нурболата. Там всё объяснялось максимально чётко и доступно. Самое ценное для меня было общение с ментором: он всегда подсказывал, где можно улучшить код и как двигаться дальше. Благодаря этому обучение стало не просто теорией, а настоящим практическим опытом.</p>
+    <p>Сейчас работаю в <b>Mobile Protection</b>, должность: Frontend-разработчик (Angular). В мои обязанности входит:  Разработка и поддержка веб-приложений на Angular. Оклад: 400 000 тенге.</p>
     <ul>
-      <li>Тел: +7 777 287 8182</li>
-      <li>Telegram/WhatsApp: <a href="https://t.me/anzUralsk" target="_blank">https://t.me/anzUralsk</a></li>
+      <li><b>Мой GitLab</b>: <a href="https://gitlab.com/riko321riko321" target="_blank">riko321riko321</a></li>
     </ul>
+    <hr>
+    <h3>Дамир</h3>
+    <p>Привет, меня зовут Дамир, я из Уральска. С детства увлекался разработкой: пробовал делать игры на Unreal Engine, а позже начал создавать сайты и проекты в университете.</p>
+    <p>Во время практики я пришёл к Нурболату — мы разбирали алгоритмы, паттерны и делали командный проект. Это дало мне хороший фундамент для старта.</p>
+    <p>Сейчас я работаю <b>Full Stack-разработчиком</b> и продолжаю развиваться в этой сфере. Опыт в команде стал для меня отличным стартом, чтобы уверенно строить карьеру в IT.</p>
   </div>
 </div>
 
 <div id="python" class="tabcontent" style="display:none">
   <div class="w3-container w3-padding-32">
-    <h2>Программа Python</h2>
+    <h3>Модуль 1: "Основы программирования на Python"</h3>
+    <h4>План учебы:</h4>
+    <ol>
+      <li>Введение в Python и мир IT</li>
+      <li>Базовые элементы Python</li>
+      <li>Работа с данными: Числа и Строки, Списки</li>
+      <li>Введение в контроль версий с Git и GitHub.</li>
+      <li>Коллекции данных и типизация: кортежи, множества, словари</li>
+      <li>Логика и ветвление</li>
+      <li>Циклы и итерации в Python</li>
+      <li>Функции — строительные блоки программы</li>
+      <li>Модули, области видимости и отладка</li>
+      <li>Мастер-класс: Функции и отладка</li>
+      <li>Готовимся к практике, мастер-класс по практике и тестированию</li>
+      <li>Продвинутые концепции: Докстрока, Колбэк, Лямбда</li>
+      <li>Продвинутые концепции: Рекурсия, Замыкание</li>
+      <li>Продвинутые концепции: Генераторы и Декораторы</li>
+      <li>Ассинхронность, ввод-вывод, файлы</li>
+      <li>Работа с данными: RegEx, Дата, try</li>
+      <li>Делаем консольную программу</li>
+      <li>практика...</li>
+      <li>практика...</li>
+      <li>практика...</li>
+    </ol>
+    <h4>Дополнительно:</h4>
+    <ul>
+      <li>В каждом уроке, ментор разбирает практические случаи на живых примерах</li>
+      <li>Практически в каждом уроке есть практические или домашние задания</li>
+      <li>Начиная с 11 урока, студенты подключатся к решению практических задач через тестирование. Практика и теория с этого момента будут идти параллельно.</li>
+      <li>Студенты изначально будут учиться проверять чужой код, делая друг у друга ревью ДЗ и практики.</li>
+    </ul>
+    <h4>Результат:</h4>
+    <ol>
+      <li>Изучите и освоите синтаксис Python. Будете довольно уверенно писать код на этом языке.</li>
+      <li>Изучите азбуку программирования:
+        <ul>
+          <li>основные компоненты кода (переменная, типы данных, логические операторы и прочее)</li>
+          <li>основные блоки кода (ветвление, циклы, функции)</li>
+          <li>читать и понимать ход выполнения кода, в том числе чужого</li>
+        </ul>
+      </li>
+      <li>Богатый практический опыт решения алгоритмических задач</li>
+      <li>Изучите Git, GitHub. Любой программист должен уверенно работать этими инструментами.</li>
+      <li>Получите начальный уровень командного взаимодействия. Узнаете, что такое код-ревью и начнёте его практиковать.</li>
+      <li>Будете готовы к переходу на более сложные концепции программирования.</li>
+    </ol>
+    <p>Все навыки начиная со второго пункта действительны для любого языка программирования. Так что второй и последующий язык дастся вам намного легче. Это как научиться водить автомобиль, другой автомобиль хоть и отличается, но концептуально это тот же автомобиль.</p>
+    <h4>Итог:</h4>
+    <p>Вы научитесь думать как программист и понимать написанный код так, как его будет понимать компьютер.</p>
+  </div>
+
+  <div class="w3-container w3-padding-32 w3-light-grey">
+    <h3>Модуль 2: "Объектно-ориентированное программирование на Python"</h3>
+    <p>Скоро будет!</p>
+  </div>
+
+  <div class="w3-container w3-padding-32">
+    <h3>Модуль 3: "Командная разработка веб-приложения на Python"</h3>
     <p>Скоро будет!</p>
   </div>
 </div>
@@ -220,25 +314,97 @@
   </div>
 </div>
 
-<!-- Footer -->
+<div id="behind-the-scenes" class="tabcontent" style="display:none">
+  <div class="w3-container w3-padding-32">
+    <h2>За кулисами</h2>
+    <p>Бывшие коллеги и студенты просмотрели этот сайт и сказали, что он «скучный», «много букв» и «похож на документ». Они считают, что сайт — это лицо нашей работы, и по нему будут судить о нашей профпригодности.</p>
+    <p>Не буду спорить. Они правы.</p>
+    <p>Но мне этот сайт нравится. Он минималистичен, возможно, даже слишком. Моё оправдание? Я больше программист, чем дизайнер или маркетолог.</p>
+    <p>Я следую принципам, близким каждому разработчику, например, <b>Дзену Python</b>:</p>
+    <ul>
+      <li>Красивое лучше, чем уродливое.</li>
+      <li>Явное лучше, чем неявное.</li>
+      <li>Простое лучше, чем сложное.</li>
+      <li>Читаемость имеет значение.</li>
+    </ul>
+    <p>Эти правила универсальны. В IT, как правило, чем проще, тем лучше. Я старался сделать этот сайт максимально простым, понятным и красивым, чтобы он был по-настоящему эффективным.</p>
+    <p>И если вы читаете эти строки, значит, моя цель достигнута — здесь есть что-то, что вас зацепило ;-).</p>
+  </div>
+</div>
+
+<div id="contacts" class="tabcontent" style="display:none">
+  <div class="w3-container w3-padding-32">
+    <h2>Анкета</h2>
+    <p>Если вы хотите попробовать наши курсы (помните, первые три урока бесплатны), то нужно заполнить анкету и определиться с ответами на вопросы:</p>
+    <ol>
+      <li>Какой язык программирования меня интересует (python или js+ts)?</li>
+      <li>Какой формат обучения меня интересует (офлайн или онлайн)?</li>
+      <li>Какие дни недели обучения мне удобны?</li>
+      <li>Какое время обучения мне удобно?</li>
+    </ol>
+    <p>Если вы определились с ответами, смело переходите по <a href="https://forms.gle/Mwm6J3CvHakJBcrGA" target="_blank">ссылке</a>!</p>
+    <h2>Контакты</h2>
+    <p>Если у вас возникли вопросы, можете связаться с нами, и мы обязательно ответим:</p>
+    <ul>
+      <li>Тел: +7 777 287 8182</li>
+      <li>Telegram: <a href="https://t.me/anzUralsk" target="_blank">https://t.me/anzUralsk</a></li>
+    </ul>
+  </div>
+</div>
+
+<div class="tabs w3-bar w3-black w3-center">
+  <button class="w3-bar-item w3-button tablink w3-white" data-tabname="about-of-course" onclick="openTab(event,'about-of-course')">О курсах</button>
+  <button class="w3-bar-item w3-button tablink" data-tabname="reviews" onclick="openTab(event,'reviews')">Отзывы</button>
+  <button class="w3-bar-item w3-button tablink" data-tabname="python" onclick="openTab(event,'python')">Python</button>
+  <button class="w3-bar-item w3-button tablink" data-tabname="ts" onclick="openTab(event,'ts')">TS</button>
+  <button class="w3-bar-item w3-button tablink" data-tabname="behind-the-scenes" onclick="openTab(event,'behind-the-scenes')">За кулисами</button>
+  <button class="w3-bar-item w3-button tablink" data-tabname="contacts" onclick="openTab(event,'contacts')">Контакты</button>
+</div>
+
 <footer class="w3-container w3-center w3-padding-32 w3-black">
   <div class="footer-rights">© 2025 Все права принадлежат Нурболату :-).</div>
   <a href="#top" class="w3-button w3-circle w3-white footer-button">↑</a>
 </footer>
 
 <script>
-  function openTab(evt, tabName) {
-    const tabcontent = document.getElementsByClassName("tabcontent");
-    for (let i = 0; i < tabcontent.length; i++) {
-      tabcontent[i].style.display = "none";
-    }
-    const tablinks = document.getElementsByClassName("tablink");
-    for (let i = 0; i < tablinks.length; i++) {
-      tablinks[i].classList.remove("w3-white");
-    }
-    document.getElementById(tabName).style.display = "block";
-    evt.currentTarget.classList.add("w3-white");
-  }
+  const tabScrollPositions = {};
+  let currentTabId = 'about-of-course';
+
+  function openTab(evt, tabName) {
+    // 1. Сохраняем текущую позицию прокрутки
+    const currentScrollPosition = window.pageYOffset || document.documentElement.scrollTop;
+    tabScrollPositions[currentTabId] = currentScrollPosition;
+
+    // 2. Скрываем весь контент вкладок
+    const tabcontent = document.getElementsByClassName("tabcontent");
+    for (let i = 0; i < tabcontent.length; i++) {
+      tabcontent[i].style.display = "none";
+    }
+
+    // 3. Обновляем классы у ВСЕХ кнопок вкладок
+    const allTablinks = document.getElementsByClassName("tablink");
+    for (let i = 0; i < allTablinks.length; i++) {
+      // Исправленная проверка: теперь сравниваем data-tabname с tabName
+      if (allTablinks[i].getAttribute('data-tabname') === tabName) {
+        allTablinks[i].classList.add("w3-white");
+      } else {
+        allTablinks[i].classList.remove("w3-white");
+      }
+    }
+    
+    // 4. Показываем контент новой вкладки
+    document.getElementById(tabName).style.display = "block";
+
+    // 5. Восстанавливаем позицию прокрутки для новой вкладки
+    const newScrollPosition = tabScrollPositions[tabName] || 0;
+    window.scrollTo({
+      top: newScrollPosition,
+      behavior: 'smooth'
+    });
+    
+    // 6. Обновляем ID текущей вкладки для следующего переключения
+    currentTabId = tabName;
+  }
 </script>
 
 </body>
