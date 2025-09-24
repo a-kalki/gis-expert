@@ -103,19 +103,18 @@ try {
           const status = isProd ? 500 : 400;
           return new Response(errorMessage, { status, headers: CORS_HEADERS });
         }
-      } else {
+      } else { 
         // --- Раздача статических файлов ---
         const isProd = process.env.NODE_ENV === 'production';
         const staticDir = isProd ? 'dist/prod' : 'dist/dev';
-        let filePath = join(process.cwd(), staticDir, url.pathname);
+        let filePath;
 
         // Если путь - корень, отдаем index.html
-        if (url.pathname === '/' || url.pathname === '/index.html') {
+        if (url.pathname === '/') {
           filePath = join(process.cwd(), staticDir, 'index.html');
-        } else if (url.pathname === '/course-details') {
-          filePath = join(process.cwd(), staticDir, 'course-details.html');
-        } else if (url.pathname === '/form') {
-          filePath = join(process.cwd(), staticDir, 'form.html');
+        } else {
+          // Для всех остальных запросов пытаемся отдать файл по запрошенному пути
+          filePath = join(process.cwd(), staticDir, url.pathname);
         }
 
         const file = Bun.file(filePath);

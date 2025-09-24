@@ -25,7 +25,7 @@ if (!isProd && !isDev) {
 }
 
 const OUT_DIR = isProd ? 'dist/prod' : 'dist/dev';
-const API_BASE_URL = isProd ? 'https://api.your-prod-domain.com' : 'http://localhost:3000';
+const API_BASE_URL = isProd ? process.env.API_BASE_URL || 'https://course.dedok.life' : 'http://localhost:3000';
 
 console.log(`Начинается сборка в режиме: ${isProd ? 'Production' : 'Development'}`);
 console.log(`Выходная директория: ${OUT_DIR}`);
