@@ -1,0 +1,6 @@
+[test]
+# Предзагрузка happy-dom для всех тестов
+preload = ["@happy-dom/global-registrator"]
+
+# Настройки для TypeScript
+tsconfig = "./tsconfig.json"

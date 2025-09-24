@@ -1,0 +1,36 @@
+{
+  "name": "it-course-landing",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "devDependencies": {
+    "@happy-dom/global-registrator": "^18.0.1",
+    "@playwright/test": "^1.55.1",
+    "@types/bun": "latest",
+    "dotenv-cli": "^10.0.0",
+    "playwright": "^1.55.1"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "better-sqlite3": "^12.3.0",
+    "happy-dom": "^18.0.1",
+    "libphonenumber-js": "^1.12.18",
+    "n8n": "^1.111.1"
+  },
+  "scripts": {
+    "build:dev": "bun run build.ts --dev",
+    "build:prod": "bun run build.ts --prod",
+    "dev:server": "bun --hot run src/api/server.ts",
+    "start:dev": "NODE_ENV=development bun run build:dev && bun run dev:server",
+    "start:prod": "NODE_ENV=production bun run src/api/server.ts",
+    "test": "bun test",
+    "test:ui": "bun test src/ui/**/*.test.ts",
+    "test:api": "bun test src/api/**/*.test.ts",
+    "test:domain": "bun test src/domain/**/*.test.ts",
+    "test:watch": "bun test --watch",
+    "test:e2e": "bun test test/e2e/form-submission.test.ts test/e2e/analytics.test.ts test/e2e/browser-form.test.ts",
+    "db:migrate": "bun run db-utils/run-migrations.ts"
+  }
+}
