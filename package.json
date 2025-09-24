@@ -22,9 +22,9 @@
   "scripts": {
     "build:dev": "NODE_ENV=development bun run build.ts --dev",
     "build:prod": "NODE_ENV=production bun run build.ts --prod",
-    "dev:server": "bun --hot run src/api/server.ts",
-    "start:dev": "bun run build:dev && NODE_ENV=development bun run dev:server",
-    "start:prod": "bun run build:prod && NODE_ENV=production bun run src/api/server.ts",
+    "dev:server": "NODE_ENV=development bun --hot run src/api/server.ts",
+    "start:dev": "bun run build:dev && bun run dev:server",
+    "start:prod": "bun run build:prod && pm2 start ecosystem.config.cjs --env production",
     "test": "bun test",
     "test:ui": "bun test src/ui/**/*.test.ts",
     "test:api": "bun test src/api/**/*.test.ts",

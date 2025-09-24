@@ -67,7 +67,7 @@ async function buildJsTs() {
   if (result.success) {
     console.log('JavaScript/TypeScript успешно собраны.');
   } else {
-    console.error('Ошибка сборки JavaScript/TypeScript:', result.logs);
+    console.error('Ошибка сборки JavaScript/TypeScript:', result);
     process.exit(1);
   }
 }
