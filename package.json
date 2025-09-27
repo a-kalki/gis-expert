@@ -14,10 +14,9 @@
     "typescript": "^5"
   },
   "dependencies": {
-    "better-sqlite3": "^12.3.0",
     "happy-dom": "^18.0.1",
     "libphonenumber-js": "^1.12.18",
-    "n8n": "^1.111.1"
+    "openai": "^5.23.1"
   },
   "scripts": {
     "build:dev": "NODE_ENV=development bun run build.ts --dev",
@@ -30,7 +29,8 @@
     "test:api": "bun test src/api/**/*.test.ts",
     "test:domain": "bun test src/domain/**/*.test.ts",
     "test:watch": "bun test --watch",
-    "test:e2e": "bun test test/e2e/form-submission.test.ts test/e2e/analytics.test.ts test/e2e/browser-form.test.ts",
-    "db:migrate": "bun run db-utils/run-migrations.ts"
+    "test:e2e": "bun test test/e2e/form-submission.test.ts test/e2e/analytics.test.ts test/e2e/browser-form.test.ts test/e2e/chat.test.ts",
+    "db:migrate": "bun run db-utils/run-migrations.ts",
+    "prepare:context": "bun run scripts/prepare-ai-context.ts"
   }
 }

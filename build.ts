@@ -4,14 +4,16 @@ import { join } from 'node:path';
 // --- Конфигурация сборки ---
 const SRC_UI_DIR = 'src/ui';
 const ENTRY_POINTS = [
-  join(SRC_UI_DIR, 'main.ts'),
+  join(SRC_UI_DIR, 'user-id-manager.ts'), // ДОБАВИТЬ ПЕРВЫМ!
+  join(SRC_UI_DIR, 'main-of-details.ts'),
   join(SRC_UI_DIR, 'tracker.ts'),
   join(SRC_UI_DIR, 'form-logic.ts'),
+  join(SRC_UI_DIR, 'chat-logic.ts'),
 ];
 const HTML_FILES = [
   join(SRC_UI_DIR, 'index.html'),
   join(SRC_UI_DIR, 'form.html'),
-  join(SRC_UI_DIR, 'course-details.html'),
+  join(SRC_UI_DIR, 'details.html'),
 ];
 
 // --- Получение аргументов командной строки ---

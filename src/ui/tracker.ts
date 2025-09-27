@@ -1,4 +1,3 @@
-// src/ui/tracker.ts
 // Модуль для сбора и отправки аналитики поведения пользователей
 
 console.log("Трекер аналитики загружен.");
@@ -62,21 +61,7 @@ const sectionEntryTimes: Map<string, number> = new Map(); // Хранит вре
  * Получает или генерирует уникальный ID пользователя из localStorage.
  */
 function getOrSetUserId(): string {
-  const STORAGE_KEY: string = 'it-course-user-id';
-  let userId: string | null = localStorage.getItem(STORAGE_KEY);
-
-  if (!userId) {
-    const randomBytes: Uint8Array = new Uint8Array(8);
-    window.crypto.getRandomValues(randomBytes);
-    userId = Array.from(randomBytes)
-      .map((byte: number) => byte.toString(16).padStart(2, '0'))
-      .join('');
-    localStorage.setItem(STORAGE_KEY, userId);
-    console.log("Сгенерирован новый User ID:", userId);
-  } else {
-    console.log("Найден существующий User ID:", userId);
-  }
-  return userId;
+  return window.UserIdManager.getOrCreateUserId();
 }
 
 /**
@@ -146,9 +131,9 @@ function startMetricsCollection(): void {
     }
   });
 
-  // Логика отслеживания переходов по вкладкам (только для course-details.html)
-  if (analyticsState.pageName === 'details') {
-    console.log("Запущена логика отслеживания вкладок для course-details.html");
+// Логика отслеживания переходов по вкладкам (только для details.html)
+    if (document.querySelector('meta[name="page-name"][content="details"]')) {
+      console.log("Запущена логика отслеживания вкладок для details.html");
     let currentTab: string = 'unknown_tab';
     const activeTabButton = document.querySelector('.tabs .tablink.w3-white');
     if (activeTabButton) {

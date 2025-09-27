@@ -2,9 +2,9 @@
 <html lang="ru">
 <head>
   <meta name="page-name" content="landing">
-  <meta name="page-variant" content="v1_initial">
+  <meta name="page-variant" content="v2_mentor_human">
   <meta charset="UTF-8">
-  <title>Курсы программирования - Стань разработчиком</title>
+  <title>Менторство по программированию - Старт в IT с опытным наставником</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -24,14 +24,20 @@
       padding: 40px 20px;
     }
     h1 {
-      font-size: 3em;
+      font-size: 2.8em;
       font-weight: 900;
       margin-bottom: 20px;
+      line-height: 1.2;
+    }
+    h2 {
+      font-size: 2.2em;
+      font-weight: 700;
+      margin-bottom: 30px;
     }
     p {
       font-size: 1.2em;
       line-height: 1.6;
-      margin-bottom: 30px;
+      margin-bottom: 25px;
     }
     .highlight {
       color: #00ff99;
@@ -40,39 +46,27 @@
       padding: 60px 20px;
       border-top: 1px solid #333;
     }
-    .section h2 {
-      font-size: 2.5em;
-      font-weight: 700;
-      margin-bottom: 40px;
-    }
     .benefits-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 30px;
+      gap: 25px;
+      margin-top: 40px;
     }
     .benefit {
       background-color: #1e1e1e;
       padding: 30px;
       border-radius: 10px;
+      text-align: left;
     }
     .benefit h3 {
-      font-size: 1.5em;
+      font-size: 1.4em;
       margin-bottom: 15px;
       color: #00ff99;
     }
-    .warning {
-      background-color: #1e1e1e;
-      padding: 40px;
-      border-radius: 10px;
-      border-left: 5px solid #ff4d4d;
-    }
-    .warning h2 {
-        color: #ff4d4d;
-    }
     .free-trial {
-        background-color: rgba(0, 255, 153, 0.1);
-        border-top: 1px solid #00ff99;
-        border-bottom: 1px solid #00ff99;
+      background-color: rgba(0, 255, 153, 0.1);
+      border-top: 1px solid #00ff99;
+      border-bottom: 1px solid #00ff99;
     }
     .cta-section {
       padding: 80px 20px;
@@ -82,6 +76,7 @@
       justify-content: center;
       gap: 20px;
       flex-wrap: wrap;
+      margin: 30px 0;
     }
     .btn {
       display: inline-block;
@@ -90,14 +85,17 @@
       text-decoration: none;
       border-radius: 5px;
       transition: all 0.3s ease;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
     }
     .btn-primary {
       background-color: #00ff99;
       color: #121212;
-      font-weight: 700;
     }
     .btn-primary:hover {
       background-color: #ffffff;
+      transform: translateY(-2px);
     }
     .btn-secondary {
       background-color: transparent;
@@ -107,74 +105,178 @@
     .btn-secondary:hover {
       background-color: #00ff99;
       color: #121212;
+      transform: translateY(-2px);
+    }
+    .site-link {
+      color: #00ff99;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .site-link:hover {
+      text-decoration: underline;
+    }
+    .intro-text {
+      font-size: 1.3em;
+      margin-bottom: 40px;
+      opacity: 0.9;
     }
     footer {
-      padding: 20px;
+      padding: 30px 20px;
       border-top: 1px solid #333;
       font-size: 0.9em;
+      opacity: 0.7;
+    }
+    
+    /* Chat styles */
+    #chat-container {
+      background-color: #1e1e1e;
+      border-radius: 10px;
+      padding: 25px;
+      max-width: 700px;
+      margin: 0 auto;
+      text-align: left;
+    }
+    #chat-messages {
+      height: 300px;
+      overflow-y: auto;
+      margin-bottom: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+    .message {
+      padding: 12px 18px;
+      border-radius: 18px;
+      margin-bottom: 10px;
+      max-width: 80%;
+      box-sizing: border-box;
+      font-size: 0.8rem; /* Уменьшаем шрифт */
+      line-height: 1.5;  /* Уменьшаем межстрочный интервал */
+    }
+    .message p {
+      margin: 0; /* Убираем лишний отступ у параграфа */
+      font-size: 0.8rem; /* Уменьшаем шрифт */
+    }
+    .user-message {
+      background-color: #00ff99;
+      color: #121212;
+      align-self: flex-end;
+      border-bottom-right-radius: 5px;
+    }
+    .assistant-message {
+      background-color: #333;
+      color: #fff;
+      align-self: flex-start;
+      border-bottom-left-radius: 5px;
+    }
+    #chat-form {
+      display: flex;
+      gap: 10px;
+    }
+    #chat-input {
+      flex-grow: 1;
+      padding: 12px;
+      border-radius: 5px;
+      border: 1px solid #333;
+      background-color: #252525;
+      color: #fff;
+      font-size: 1em;
+    }
+
+    .ai-badge {
+        background: #e3f2fd;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 12px;
+        color: #1976d2;
+    }
+    
+    @media (max-width: 768px) {
+      h1 { font-size: 2.2em; }
+      h2 { font-size: 1.8em; }
+      .benefits-grid { grid-template-columns: 1fr; }
+      .cta-buttons { flex-direction: column; }
+      .message { max-width: 90%; }
     }
   </style>
 </head>
 <body>
 
+  <!-- Секция 1: Герой -->
   <div class="container" data-track-view-time="landing-intro">
-    <h1>Код — твоя новая <span class="highlight">суперсила</span>.</h1>
-    <p>Надоело просто пользоваться приложениями?
-    Создавай свои!
-    Мы не обещаем, что будет легко. Но обещаем, что будет капец как интересно.
-    Программирование — это не магия, а труд, который открывает двери в мир, где ты можешь создавать всё, что захочешь.</p>
+    <h1>Начни путь в IT не в одиночку, <span class="highlight">а с ментором.</span></h1>
+    <p>Программирование — это больше, чем код. Это мышление, команда и ответственность.</p>
+    <p>Я помогу тебе не просто изучить синтаксис, а понять логику IT-среды, найти единомышленников и уверенно сделать первые шаги в профессии. Моя задача — дать тебе путевку.</p>
   </div>
 
-  <div class="section" data-track-view-time="landing-benefits">
+  <!-- Секция 2: Миссия -->
+  <div class="section" data-track-view-time="landing-mission">
     <div class="container">
-      <h2>Что ты получишь?</h2>
+      <h2>Почему я этим занимаюсь?</h2>
+      <p>Я верю, что сильные IT-специалисты могут строить будущее здесь и сейчас. Моя миссия — помочь тебе вырасти как профессионалу и как личности.</p>
+      <p>Мои студенты работают в международных компаниях. Но для меня важнее, что они выросли в сильных специалистов, которые уверены в своем будущем.</p>
+      
       <div class="benefits-grid">
         <div class="benefit">
-          <h3>Востребованные навыки</h3>
-          <p>Научись тому, за что платят компании по всему миру.</p>
+          <h3>Развитие региона</h3>
+          <p>Я хочу растить сильных разработчиков здесь, в Уральске.</p>
         </div>
         <div class="benefit">
-          <h3>Свои проекты</h3>
-          <p>От простого сайта до сложного приложения — твори, что хочешь.</p>
+          <h3>Становление личности</h3>
+          <p>IT учит думать, работать в команде и нести ответственность за результат.</p>
         </div>
         <div class="benefit">
-          <h3>Комьюнити</h3>
-          <p>Найди единомышленников и друзей в нашей тусовке.</p>
-        </div>
-        <div class="benefit">
-          <h3>Опыт команды</h3>
-          <p>Поработай в команде, как в настоящей IT-компании.</p>
-        </div>
-        <div class="benefit">
-          <h3>Гибкость выбора</h3>
-          <p>Решай сам: научиться быстро собирать рабочие приложения для бизнеса или стать 'архитектором' больших и крутых проектов.</p>
+          <h3>Путевка в жизнь</h3>
+          <p>Ты получишь не навыки, а уверенность и поддержку для старта карьеры.</p>
         </div>
       </div>
     </div>
   </div>
 
-  <div class="section" data-track-view-time="landing-warning">
+  <!-- Секция 3: Подход -->
+  <div class="section free-trial" data-track-view-time="landing-approach">
     <div class="container">
-        <div class="warning">
-            <h2>Это не для всех.</h2>
-            <p>Тебе придется много учиться и практиковаться. Иногда будет сложно и непонятно. Но если ты готов к вызову — мы поможем тебе пройти этот путь.</p>
-        </div>
+      <h2>Взаимная ответственность</h2>
+      <p>Я вкладываюсь в твое развитие, и жду такой же серьезной отдачи.</p>
+      <p>Если ты настроен учиться, мы всегда найдем способ: будь то гибкая оплата или возможность отработать часть обучения. Для меня важно, чтобы финансы не стали препятствием для мотивированного человека.</p>
     </div>
   </div>
 
-  <div class="section free-trial" data-track-view-time="landing-free-trial">
-      <div class="container">
-        <h2>Начни с нуля. <span class="highlight">Бесплатно.</span></h2>
-        <p>Мы даем 3 бесплатных урока, чтобы ты мог попробовать, задать вопросы и понять, твое это или нет. Без обязательств и скрытых условий.</p>
+  <!-- Секция 4: Объединенный блок информации и ИИ-ассистента -->
+  <div class="section" id="ai-chat-section" data-track-view-time="landing-info-chat">
+    <div class="container">
+      <h2>Хочешь изучить все до мелочей?</h2>
+      <p class="intro-text">
+        Программа модулей, отзывы студентов и "закулисье". 
+        <a href="/details" class="site-link">Посети сайт</a>, он создавался как раз для этого, 
+        или спроси моего ИИ-ассистента.
+      </p>
+      
+      <div id="chat-container">
+        <div id="chat-messages">
+          <div class="message assistant-message">
+            <p>Привет! Я ИИ-ассистент, который помогает Нурболату отвечать на вопросы. Все мои ответы основаны на подробной информации со <a href="/details" style="color: #007bff; text-decoration: underline;">страницы деталей курса</a>. Спрашивай о программе, преподавателе или условиях - постараюсь помочь! Для сложных вопросов всегда можно связаться с Нурболатом напрямую.</p>
+          </div>
+        </div>
+        <form id="chat-form">
+          <input type="text" id="chat-input" placeholder="Твой вопрос о курсах..." required>
+          <button type="submit" class="btn btn-primary">Отправить</button>
+        </form>
       </div>
+    </div>
   </div>
 
+  <!-- Секция 5: Призыв к действию -->
   <div class="cta-section" data-track-view-time="landing-cta">
     <div class="container">
-      <h2>Готов начать?</h2>
+      <h2>Готов получить новый жизненный опыт?</h2>
+      <p>Приходи на пробный урок. Первые три урока бесплатно.</p>
+      <p>Мы познакомимся, я отвечу на твои вопросы, и ты попробуешь силы в программировании.</p>
+      <p>Без обязательств, с полным пониманием.</p>
+      
       <div class="cta-buttons">
-<a href="/form" class="btn btn-primary" data-analytics-action="fill_form_from_landing">Заполнить анкету</a>
-        <a href="/course-details" class="btn btn-secondary" data-analytics-action="goto_details_site">Узнать больше</a>
+        <a href="/form" class="btn btn-primary" data-analytics-action="sign_for_trial">Заполнить анкету</a>
+        <a href="/course-details" class="btn btn-secondary" data-analytics-action="visit_course_details">Изучить сайт</a>
       </div>
     </div>
   </div>
@@ -185,6 +287,8 @@
     </div>
   </footer>
 
+  <script src="user-id-manager.js"></script>
   <script src="tracker.js" defer></script>
+  <script src="chat-logic.js" defer></script>
 </body>
 </html>

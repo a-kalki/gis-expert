@@ -20,5 +20,5 @@ All content should be generated in Russian, unless it is code.
 
 All user-facing content (HTML, Markdown for content) should use an informal tone, addressing the user as "ты" (you, informal singular) instead of "вы" (you, formal singular or plural).
 
-**Exception:** Review sections (e.g., in `course-details.html`) should not be modified, as they represent direct quotes or testimonials.
+**Exception:** Review sections (e.g., in `details.html`) should not be modified, as they represent direct quotes or testimonials.
 

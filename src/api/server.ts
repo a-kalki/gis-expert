@@ -2,36 +2,46 @@ import { Db } from './db'; // Use the Db class directly
 import { saveAnalyticsData } from './services/analytics';
 import { saveFormData } from './services/formSubmission';
 import { join } from 'path';
+import { OpenAIService } from './ai/openai-service';
 
 try {
   // --- Конфигурация ---
   const PORT = process.env.PORT || 3000;
-  const DB_PATH = process.env.DB_PATH || './course.sqlite'; // Путь к вашей БД
+  const DB_PATH = process.env.DB_PATH || './course.sqlite';
+  const AI_API_KEY = process.env.AI_CHAT_OPENAI_API_KEY as string;
 
-  // --- CORS Headers ---
-  const allowedOrigin = process.env.NODE_ENV === 'production' 
-    ? process.env.API_BASE_URL // For production, use the domain from .env.production
-    : 'http://localhost:3000'; // For development
+  if (!AI_API_KEY) {
+    throw new Error('AI_API_KEY не установлена');
+  }
+
+  // Инициализация сервисов
+  const aiService = new OpenAIService(AI_API_KEY, 'gpt-4o');
+
+  // CORS Headers
+  const allowedOrigin = process.env.NODE_ENV === 'production'
+    ? process.env.API_BASE_URL
+    : 'http://localhost:3000';
 
   const CORS_HEADERS = {
     'Access-Control-Allow-Origin': process.env.NODE_ENV === 'test' ? '*' : allowedOrigin,
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type',
   };
-  // --- Инициализация БД ---
-  const appDb = new Db(DB_PATH); // Use the new Db class
+
+  // Инициализация БД
+  const appDb = new Db(DB_PATH);
   try {
-    appDb.connect(); // Connect using the Db class
-  await appDb.runMigrations('./migrations'); // Запуск миграций
+    appDb.connect();
+    await appDb.runMigrations('./migrations');
   } catch (error: any) {
-    console.error(`Ошибка подключения к базе данных: ${error.message}`);
-    process.exit(1); // Выходим, если не удалось подключиться к БД
+    console.error(`Ошибка БД: ${error.message}`);
+    process.exit(1);
   }
 
-  // --- Rate Limiting (Простое ограничение по IP в памяти) ---
+  // Rate Limiting (оставляем как было)
   const rateLimitStore = new Map<string, { count: number; startTime: number }>();
-  const RATE_LIMIT_WINDOW_MS = 60 * 1000; // 1 минута
-  const MAX_REQUESTS_PER_WINDOW = 10; // 10 запросов в минуту с одного IP
+  const RATE_LIMIT_WINDOW_MS = 60 * 1000;
+  const MAX_REQUESTS_PER_WINDOW = 10;
 
   function isRateLimited(ip: string): boolean {
     const now = Date.now();
@@ -71,10 +81,7 @@ try {
 
       if (request.method === 'OPTIONS') {
         // Обработка CORS preflight запросов
-        return new Response(null, {
-          status: 204, // No Content
-          headers: CORS_HEADERS,
-        });
+        return new Response(null, { status: 204, headers: CORS_HEADERS });
       }
 
       if (request.method === 'POST' && url.pathname === '/api/track') {
@@ -103,21 +110,62 @@ try {
           const status = isProd ? 500 : 400;
           return new Response(errorMessage, { status, headers: CORS_HEADERS });
         }
-      } else { 
+      } else if (request.method === 'POST' && url.pathname === '/api/chat') {
+        try {
+            const { question, userId } = await request.json();
+            
+            if (!question || typeof question !== 'string') {
+                return new Response('"question" обязательно', { status: 400, headers: CORS_HEADERS });
+            }
+            
+            if (!userId || typeof userId !== 'string') {
+                return new Response('"userId" обязательно', { status: 400, headers: CORS_HEADERS });
+            }
+
+            console.log(`Chat request from user: ${userId.substring(0, 8)}...`);
+
+            // Остальной код без изменений
+            const stream = new ReadableStream({
+                async start(controller) {
+                    try {
+                        for await (const chunk of aiService.processMessage(userId, question)) {
+                            controller.enqueue(new TextEncoder().encode(chunk));
+                        }
+                    } catch (error) {
+                        console.error('Stream error:', error);
+                        controller.enqueue(new TextEncoder().encode('Ошибка потока'));
+                    } finally {
+                        controller.close();
+                    }
+                }
+            });
+
+            return new Response(stream, {
+                headers: {
+                    ...CORS_HEADERS,
+                    'Content-Type': 'text/plain; charset=utf-8',
+                }
+            });
+
+        } catch (error: any) {
+            console.error('CHAT API ERROR:', error);
+            return new Response('Внутренняя ошибка', { status: 500, headers: CORS_HEADERS });
+        }
+      } else {
         // --- Раздача статических файлов ---
         const isProd = process.env.NODE_ENV === 'production';
         const staticDir = isProd ? 'dist/prod' : 'dist/dev';
-        let filePath;
+        let filePath = url.pathname === '/'
+          ? join(process.cwd(), staticDir, 'index.html')
+          : join(process.cwd(), staticDir, url.pathname);
 
-        // Если путь - корень, отдаем index.html
-        if (url.pathname === '/') {
-          filePath = join(process.cwd(), staticDir, 'index.html');
-        } else {
-          // Для всех остальных запросов пытаемся отдать файл по запрошенному пути
-          filePath = join(process.cwd(), staticDir, url.pathname);
+        let file = Bun.file(filePath);
+        // Если файл не найден, пробуем добавить .html
+        if (!(await file.exists())) {
+          filePath = `${filePath}.html`;
+          file = Bun.file(filePath);
         }
 
-        const file = Bun.file(filePath);
         if (await file.exists()) {
           return new Response(file);
         }
@@ -126,19 +174,7 @@ try {
       }
     },
   });
-
-  console.log(`Bun.serve сервер слушает на порту ${server.port}`);
-
-  // Обработка завершения процесса для закрытия БД
-  process.on('beforeExit', () => {
-    // appDb.close(); // Close using the Db class - Временно закомментировано для отладки
-  });
-
-  process.on('unhandledRejection', (reason, promise) => {
-    console.error('SERVER: Unhandled Rejection at:', promise, 'reason:', reason);
-    process.exit(1); // Завершаем процесс с ошибкой
-  });
-} catch (globalError: any) {
-  console.error('SERVER: Uncaught global error:', globalError);
+} catch (error: any) {
+  console.error('SERVER: Критическая ошибка при запуске сервера:', error);
   process.exit(1);
 }
