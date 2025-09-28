@@ -1,6 +1,7 @@
 import { OpenAIService } from './openai-service';
 import { YandexGPTService } from './yandex-gpt-service';
 import { GoogleAIService } from './gemini-ai-service'
+import { DeepSeekService } from './deepseek-ai-service';
 
 
 export function getOpenAiService(): OpenAIService {
@@ -35,4 +36,15 @@ export function getGeminiAiService(): GoogleAIService {
   }
 
   return new GoogleAIService(GOOGLE_AI_KEY);
+}
+
+export function getDeepSeekAiService(): DeepSeekService {
+  const DEEPSEEK_AI_KEY = process.env.AI_DEEPSEEK_API_KEY as string;
+
+  if (!DEEPSEEK_AI_KEY) {
+      console.error('DEEPSEEK_AI_KEY must be set');
+      process.exit(1);
+  }
+
+  return new DeepSeekService(DEEPSEEK_AI_KEY);
 }

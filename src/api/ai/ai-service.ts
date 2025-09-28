@@ -17,7 +17,7 @@ export abstract class AIService {
   protected systemPrompt = '';
   protected aiContext = '';
   private sessions: Map<string, ChatSession>;
-  private readonly SESSION_TIMEOUT_MS = process.env.AI_SESSION_TIMEOUT_MIN
+  private readonly SESSION_TIMEOUT_MS = 60 * 60 * 1000; // 1 час
   private readonly MAX_HISTORY_LENGTH = 20;
 
   constructor() {
@@ -83,7 +83,6 @@ export abstract class AIService {
   }
 
   private startSessionCleanup(): void {
-    // Очистка каждые 30 минут
     setInterval(() => this.cleanupExpiredSessions(), 30 * 60 * 1000);
   }
 
@@ -99,7 +98,7 @@ export abstract class AIService {
       timestamp: Date.now()
     });
 
-    // Ограничиваем историю (оставляем самые последние сообщения)
+    // Ограничиваем историю
     if (session.messages.length > this.MAX_HISTORY_LENGTH) {
       session.messages = session.messages.slice(-this.MAX_HISTORY_LENGTH);
     }
@@ -113,7 +112,7 @@ export abstract class AIService {
         fullResponse += chunk;
       }
 
-      // Добавляем ответ ассистента в историю после успешной генерации
+      // Добавляем ответ ассистента в историю
       session.messages.push({
         role: 'assistant',
         content: fullResponse,
@@ -125,7 +124,6 @@ export abstract class AIService {
       const errorMessage = 'Извините, произошла ошибка. Попробуйте позже.';
       yield errorMessage;
       
-      // Также добавляем ошибку в историю для контекста
       session.messages.push({
         role: 'assistant',
         content: errorMessage,
@@ -134,128 +132,15 @@ export abstract class AIService {
     }
   }
 
-  // Внутренний метод для генерации ответа (реализуется в дочерних классах)
+  // Внутренний метод для генерации ответа
   protected abstract generateResponse(userMessage: string, history: ChatMessage[]): AsyncGenerator<string>;
 
-  // Вспомогательный метод для построения промпта
-  protected buildPrompt(userMessage: string, history: ChatMessage[]): string {
-      // Базовый системный промпт + контекст курса
-      let prompt = `${this.systemPrompt}\n\nКОНТЕКСТ КУРСА:\n${this.aiContext}\n\n`;
-
-      // Анализируем контекст диалога
-      const shouldRedirect = this.shouldRedirectToHuman(history);
-      const isTechnical = this.isTechnicalQuestion(history);
-      const hasDetailedQuestions = this.hasDetailedQuestions(history);
-      const userIsReady = this.userExpressedReadiness(history);
-      const topicsDiscussed = this.getDiscussedTopics(history);
-
-      // Добавляем контекст диалога для ИИ
-      prompt += `АНАЛИЗ ДИАЛОГА:\n`;
-      prompt += `- Тип вопроса: ${isTechnical ? 'технический' : 'общий'}\n`;
-      prompt += `- Требует перенаправления: ${shouldRedirect ? 'ДА' : 'нет'}\n`;
-      prompt += `- Подробных вопросов: ${hasDetailedQuestions ? 'много' : 'мало'}\n`;
-      prompt += `- Пользователь готов: ${userIsReady ? 'да' : 'нет'}\n`;
-      prompt += `- Обсуждаемые темы: ${topicsDiscussed.join(', ') || 'еще не обсуждались'}\n\n`;
-
-      // Добавляем инструкции на основе анализа
-      if (shouldRedirect) {
-          prompt += `ВАЖНО: Этот вопрос требует перенаправления к Нурболату. \n`;
-          prompt += `Дай общий ответ, но обязательно предложи личную консультацию.\n\n`;
-      }
-
-      if (isTechnical) {
-          prompt += `Это технический вопрос - отвечай уверенно от первого лица.\n\n`;
-      }
-
-      // Добавляем историю диалога
-      if (history.length > 1) {
-          const relevantHistory = history.slice(0, -1);
-          prompt += "ПРЕДЫДУЩИЙ ДИАЛОГ:\n";
-          relevantHistory.forEach((msg, index) => {
-              const role = msg.role === 'user' ? 'СТУДЕНТ' : 'НАСТАВНИК';
-              prompt += `${role}: ${msg.content}\n`;
-          });
-          prompt += "\n";
-      }
-
-      prompt += `ТЕКУЩИЙ ВОПРОС СТУДЕНТА: ${userMessage}`;
-      
-      return prompt;
-  }
-
-  // Вспомогательные методы для анализа диалога
-  private hasDetailedQuestions(history: ChatMessage[]): boolean {
-      const userMessages = history.filter(msg => msg.role === 'user');
-      const detailedKeywords = ['подробн', 'детал', 'модул', 'программ', 'содержан', 'изучат'];
-      
-      return userMessages.some(msg => 
-          detailedKeywords.some(keyword => msg.content.toLowerCase().includes(keyword))
-      );
-  }
-
-  private userExpressedReadiness(history: ChatMessage[]): boolean {
-      const userMessages = history.filter(msg => msg.role === 'user');
-      const readinessKeywords = ['запис', 'готов', 'начат', 'присоединит', 'давайте'];
-      
-      return userMessages.some(msg => 
-          readinessKeywords.some(keyword => msg.content.toLowerCase().includes(keyword))
-      );
-  }
-
-  private getDiscussedTopics(history: ChatMessage[]): string[] {
-      const topics = new Set<string>();
-      const topicKeywords = {
-          'языки': ['язык', 'python', 'javascript', 'typescript', 'js', 'ts'],
-          'стоимость': ['стоим', 'цена', 'деньги', 'тенге', 'бесплатн'],
-          'формат': ['формат', 'онлайн', 'оффлайн', 'заняти', 'урок'],
-          'программа': ['программ', 'модул', 'обучен', 'курс'],
-          'ментор': ['ментор', 'преподаватель', 'нұрболат'],
-          'трудоустройство': ['работ', 'ваканс', 'трудоустройств', 'карьер']
-      };
-
-      history.forEach(msg => {
-          const content = msg.content.toLowerCase();
-          for (const [topic, keywords] of Object.entries(topicKeywords)) {
-              if (keywords.some(keyword => content.includes(keyword))) {
-                  topics.add(topic);
-              }
-          }
-      });
-
-      return Array.from(topics);
-  }
-
-  private shouldRedirectToHuman(history: ChatMessage[]): boolean {
-      const lastUserMessage = history.filter(msg => msg.role === 'user').pop()?.content.toLowerCase() || '';
-      
-      const redirectKeywords = [
-          'бесплатно', 'скидк', 'акци', 'цен', 'стоим', 'деньг', 'оплат',
-          'когда начать', 'расписан', 'дата', 'время', 'групп',
-          'индивидуальн', 'персональн', 'личн', 'моя ситуац',
-          'гаранти', 'обещай', 'точно', 'конкретно'
-      ];
-      
-      return redirectKeywords.some(keyword => lastUserMessage.includes(keyword));
-  }
-
-  private isTechnicalQuestion(history: ChatMessage[]): boolean {
-      const lastUserMessage = history.filter(msg => msg.role === 'user').pop()?.content.toLowerCase() || '';
-      
-      const technicalKeywords = [
-          'язык', 'python', 'javascript', 'typescript', 'программ', 'код',
-          'модул', 'урок', 'задани', 'проект', 'технологи', 'фреймворк',
-          'обучен', 'методик', 'практик', 'теори'
-      ];
-      
-      return technicalKeywords.some(keyword => lastUserMessage.includes(keyword));
-  }
-
-  // Метод для сброса истории (по желанию)
+  // Метод для сброса истории
   resetSession(userId: string): boolean {
     return this.sessions.delete(userId);
   }
 
-  // Метод для получения статистики (для мониторинга)
+  // Метод для получения статистики
   getSessionStats() {
     return {
       activeSessions: this.sessions.size,

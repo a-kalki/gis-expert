@@ -2,14 +2,14 @@ import { Db } from './db'; // Use the Db class directly
 import { saveAnalyticsData } from './services/analytics';
 import { saveFormData } from './services/formSubmission';
 import { join } from 'path';
-import { getGeminiAiService } from './ai/get-gpt';
+import { getDeepSeekAiService } from './ai/get-gpt';
 
 try {
   // --- Конфигурация ---
   const PORT = process.env.PORT || 3000;
   const DB_PATH = process.env.DB_PATH || './course.sqlite';
   // Инициализация сервисов
-  const aiService = getGeminiAiService();
+  const aiService = getDeepSeekAiService();
 
   // CORS Headers
   const allowedOrigin = process.env.NODE_ENV === 'production'
