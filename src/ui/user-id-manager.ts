@@ -3,7 +3,7 @@ class UserIdManager {
     private static readonly CHAT_HISTORY_PREFIX = "chatHistory_";
     private static readonly LAST_ACTIVITY_KEY = "lastChatActivity";
     private static readonly SESSION_TIMEOUT_MS = 30 * 60 * 1000; // 30 минут
-    
+
     static getOrCreateUserId(): string {
         let userId = localStorage.getItem(this.STORAGE_KEY);
         if (!userId) {
@@ -24,18 +24,6 @@ class UserIdManager {
 
     static getChatHistoryKey(): string {
         return `${this.CHAT_HISTORY_PREFIX}${this.getOrCreateUserId()}`;
-    }
-
-    static clearUserData(): void {
-        const userId = this.getUserId();
-        if (userId) {
-            localStorage.removeItem(`${this.CHAT_HISTORY_PREFIX}${userId}`);
-            localStorage.removeItem(this.STORAGE_KEY);
-        }
-    }
-
-    static hasUserId(): boolean {
-        return !!localStorage.getItem(this.STORAGE_KEY);
     }
 
     static cleanupExpiredHistory(): void {
@@ -70,9 +58,22 @@ class UserIdManager {
         const elapsed = Date.now() - parseInt(lastActivity);
         return Math.max(0, this.SESSION_TIMEOUT_MS - elapsed);
     }
+
+    static clearUserData(): void {
+        const userId = this.getUserId();
+        if (userId) {
+            localStorage.removeItem(`${this.CHAT_HISTORY_PREFIX}${userId}`);
+            localStorage.removeItem(this.STORAGE_KEY);
+            localStorage.removeItem(this.LAST_ACTIVITY_KEY);
+        }
+    }
+
+    static hasUserId(): boolean {
+        return !!localStorage.getItem(this.STORAGE_KEY);
+    }
 }
 
-// Делаем класс доступным глобально для других скриптов
+// Делаем класс глобально доступным
 declare global {
     interface Window {
         UserIdManager: typeof UserIdManager;

@@ -2,20 +2,14 @@ import { Db } from './db'; // Use the Db class directly
 import { saveAnalyticsData } from './services/analytics';
 import { saveFormData } from './services/formSubmission';
 import { join } from 'path';
-import { OpenAIService } from './ai/openai-service';
+import { getGeminiAiService } from './ai/get-gpt';
 
 try {
   // --- Конфигурация ---
   const PORT = process.env.PORT || 3000;
   const DB_PATH = process.env.DB_PATH || './course.sqlite';
-  const AI_API_KEY = process.env.AI_CHAT_OPENAI_API_KEY as string;
-
-  if (!AI_API_KEY) {
-    throw new Error('AI_API_KEY не установлена');
-  }
-
   // Инициализация сервисов
-  const aiService = new OpenAIService(AI_API_KEY, 'gpt-4o');
+  const aiService = getGeminiAiService();
 
   // CORS Headers
   const allowedOrigin = process.env.NODE_ENV === 'production'
