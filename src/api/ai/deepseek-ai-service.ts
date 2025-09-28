@@ -15,7 +15,7 @@ export class DeepSeekService extends AIService {
             
             console.log('Sending to DeepSeek:', {
                 messagesCount: messages.length,
-                hasHistory: history.length > 1
+                historyLength: history.length
             });
 
             const response = await fetch(this.apiUrl, {
@@ -40,33 +40,8 @@ export class DeepSeekService extends AIService {
                 throw new Error(`DeepSeek error: ${response.status}`);
             }
 
-            // Стриминг
-            const reader = response.body?.getReader();
-            if (!reader) throw new Error('No reader');
-
-            const decoder = new TextDecoder();
-            
-            while (true) {
-                const { done, value } = await reader.read();
-                if (done) break;
-
-                const chunk = decoder.decode(value);
-                const lines = chunk.split('\n');
-
-                for (const line of lines) {
-                    if (line.startsWith('data: ') && !line.includes('[DONE]')) {
-                        try {
-                            const data = JSON.parse(line.slice(6));
-                            const content = data.choices[0]?.delta?.content;
-                            if (content) {
-                                yield content;
-                            }
-                        } catch (e) {
-                            // Игнорируем ошибки парсинга
-                        }
-                    }
-                }
-            }
+            // Правильная обработка стриминга
+            yield* this.handleStream(response);
 
         } catch (error: any) {
             console.error("DEEPSEEK ERROR:", error);
@@ -74,20 +49,73 @@ export class DeepSeekService extends AIService {
         }
     }
 
+    private async *handleStream(response: Response): AsyncGenerator<string> {
+        const reader = response.body?.getReader();
+        if (!reader) throw new Error('No reader');
+
+        const decoder = new TextDecoder();
+        let buffer = '';
+        
+        try {
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+
+                buffer += decoder.decode(value, { stream: true });
+                const lines = buffer.split('\n');
+                
+                // Оставляем последнюю неполную строку в буфере
+                buffer = lines.pop() || '';
+                
+                for (const line of lines) {
+                    if (line.startsWith('data: ') && line !== 'data: [DONE]') {
+                        try {
+                            const data = JSON.parse(line.slice(6));
+                            const content = data.choices[0]?.delta?.content;
+                            if (content) {
+                                yield content;
+                            }
+                        } catch (e) {
+                            // Игнорируем ошибки парсинга некритических данных
+                            if (!line.includes('[DONE]')) {
+                                console.log('Parse error for line:', line);
+                            }
+                        }
+                    }
+                }
+            }
+            
+            // Обрабатываем оставшиеся данные в буфере
+            if (buffer.trim() && buffer.startsWith('data: ') && buffer !== 'data: [DONE]') {
+                try {
+                    const data = JSON.parse(buffer.slice(6));
+                    const content = data.choices[0]?.delta?.content;
+                    if (content) {
+                        yield content;
+                    }
+                } catch (e) {
+                    // Игнорируем ошибки парсинга
+                }
+            }
+            
+        } finally {
+            reader.releaseLock();
+        }
+    }
+
     private prepareMessages(userMessage: string, history: ChatMessage[]) {
         const messages = [];
         
-        // 1. Сначала системный промпт
+        // 1. Только системный промпт без истории
         messages.push({
             role: 'system',
-            content: this.buildPromptWithHistory(userMessage, history)
+            content: this.buildSystemPrompt()
         });
 
-        // 2. Затем вся история диалога как user/assistant сообщения
-        // Берем всю историю кроме последнего сообщения (оно будет добавлено отдельно)
-        const conversationHistory = history.slice(0, -1);
+        // 2. История диалога как отдельные сообщения (ограничиваем чтобы не превысить лимит токенов)
+        const recentHistory = this.getRecentHistory(history, 8); // Последние 8 сообщений
         
-        conversationHistory.forEach(msg => {
+        recentHistory.forEach(msg => {
             messages.push({
                 role: msg.role,
                 content: msg.content
@@ -103,29 +131,17 @@ export class DeepSeekService extends AIService {
         return messages;
     }
 
-    private buildPromptWithHistory(userMessage: string, history: ChatMessage[]): string {
-        // Используем готовый системный промпт
-        let prompt = this.systemPrompt + "\n\n";
+    private getRecentHistory(history: ChatMessage[], maxMessages: number): ChatMessage[] {
+        if (history.length <= 1) return [];
         
-        // Добавляем контекст курса
-        prompt += "КОНТЕКСТ КУРСА:\n" + this.aiContext + "\n\n";
+        // Берем последние N сообщений (но не включаем текущее)
+        const startIndex = Math.max(0, history.length - 1 - maxMessages);
+        return history.slice(startIndex, -1);
+    }
 
-        // Добавляем информацию о текущем диалоге
-        if (history.length > 1) {
-            prompt += "ТЕКУЩИЙ ДИАЛОГ:\n";
-            const relevantHistory = history.slice(0, -1); // Все кроме текущего сообщения
-            
-            relevantHistory.forEach((msg, index) => {
-                const isLast = index === relevantHistory.length - 1;
-                const role = msg.role === 'user' ? 'СТУДЕНТ' : 'НАСТАВНИК';
-                const prefix = isLast ? 'ПОСЛЕДНИЙ ОБМЕН: ' : '';
-                prompt += `${prefix}${role}: ${msg.content}\n`;
-            });
-            prompt += "\n";
-        }
-
-        prompt += `ТЕКУЩИЙ ВОПРОС СТУДЕНТА: ${userMessage}`;
-        
-        return prompt;
+    private buildSystemPrompt(): string {
+        // Только системный промпт и контекст курса, без истории диалога
+        return this.systemPrompt + "\n\n" + 
+               "КОНТЕКСТ КУРСА:\n" + this.aiContext;
     }
 }
