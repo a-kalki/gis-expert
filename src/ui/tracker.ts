@@ -1,4 +1,5 @@
 // Модуль для сбора и отправки аналитики поведения пользователей
+import UserIdManager from './user-id-manager.js';
 
 console.log("Трекер аналитики загружен.");
 
@@ -61,7 +62,7 @@ const sectionEntryTimes: Map<string, number> = new Map(); // Хранит вре
  * Получает или генерирует уникальный ID пользователя из localStorage.
  */
 function getOrSetUserId(): string {
-  return window.UserIdManager.getOrCreateUserId();
+  return UserIdManager.getOrCreateUserId();
 }
 
 /**

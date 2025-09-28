@@ -1,3 +1,5 @@
+import UserIdManager from './user-id-manager.js';
+
 function initializeChat() {
     const chatForm = document.getElementById('chat-form') as HTMLFormElement;
     const chatInput = document.getElementById('chat-input') as HTMLInputElement;
@@ -256,14 +258,5 @@ function showCleanupTimer(): void {
         }, 60 * 1000);
     }
 }
-
-// Убедимся, что UserIdManager существует
-declare const UserIdManager: {
-    cleanupExpiredHistory(): void;
-    getOrCreateUserId(): string;
-    getChatHistoryKey(): string;
-    updateLastActivity(): void;
-    getTimeUntilCleanup(): number;
-};
 
 document.addEventListener('DOMContentLoaded', initializeChat);

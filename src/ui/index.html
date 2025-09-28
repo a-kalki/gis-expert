@@ -196,7 +196,26 @@
       h2 { font-size: 1.8em; }
       .benefits-grid { grid-template-columns: 1fr; }
       .cta-buttons { flex-direction: column; }
-      .message { max-width: 90%; }
+      .message { 
+        max-width: 90%;
+        font-size: 0.9rem;
+      }
+      .message p {
+        font-size: 0.9rem;
+      }
+      .section {
+        padding: 40px 15px;
+      }
+      #chat-container {
+        padding: 15px;
+      }
+      #chat-input {
+        padding: 10px;
+      }
+      #chat-form button {
+        padding: 10px 15px;
+        font-size: 1em;
+      }
     }
   </style>
 </head>
@@ -287,8 +306,8 @@
     </div>
   </footer>
 
-  <script src="user-id-manager.js"></script>
-  <script src="tracker.js" defer></script>
-  <script src="chat-logic.js" defer></script>
+  <script type="module" src="user-id-manager.js"></script>
+  <script type="module" src="tracker.js" defer></script>
+  <script type="module" src="chat-logic.js" defer></script>
 </body>
 </html>

@@ -58,12 +58,15 @@ async function buildJsTs() {
     entrypoints: ENTRY_POINTS,
     outdir: OUT_DIR,
     minify: isProd,
-    sourcemap: isDev ? 'inline' : 'none', // inline sourcemaps for dev
+    sourcemap: isDev ? 'inline' : 'none',
     env: 'inline',
     target: 'browser',
     define: {
-      __API_BASE_URL__: JSON.stringify(API_BASE_URL), // Инжекция переменной
+      __API_BASE_URL__: JSON.stringify(API_BASE_URL),
     },
+    format: 'esm', // Используем ES модули
+    splitting: true, // Включаем разделение кода
+    external: [], // Указываем внешние зависимости если есть
   });
 
   if (result.success) {

@@ -1,4 +1,4 @@
-class UserIdManager {
+export default class UserIdManager {
     private static readonly STORAGE_KEY = "it-course-user-id";
     private static readonly CHAT_HISTORY_PREFIX = "chatHistory_";
     private static readonly LAST_ACTIVITY_KEY = "lastChatActivity";
@@ -72,12 +72,3 @@ class UserIdManager {
         return !!localStorage.getItem(this.STORAGE_KEY);
     }
 }
-
-// Делаем класс глобально доступным
-declare global {
-    interface Window {
-        UserIdManager: typeof UserIdManager;
-    }
-}
-
-window.UserIdManager = UserIdManager;
