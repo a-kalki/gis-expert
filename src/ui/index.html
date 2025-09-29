@@ -154,6 +154,7 @@
       box-sizing: border-box;
       font-size: 0.8rem;
       line-height: 1.5;
+      animation: messageAppear 0.3s ease-out;
   }
   .user-message {
       background-color: #00ff99;
@@ -283,6 +284,14 @@
       padding: 10px 16px;
       font-size: 1em;
       min-width: 50px;
+    }
+
+    #chat-input {
+        font-size: 16px; /* Предотвращает зум в iOS */
+    }
+    
+    #chat-form {
+        position: relative;
     }
     
     /* Скрываем текст кнопки на очень маленьких экранах */

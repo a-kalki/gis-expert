@@ -1,8 +1,9 @@
+// src/ui/chat-logic.ts
 import UserIdManager from './user-id-manager.js';
 
 // Конфигурация эмодзи-анимаций
 const EMOJI_ANIMATIONS = {
-    'thinking': [' o_o ', ' -_- ', ' ◔_◔ ', ' ◕_◕ ', ' ￣ω￣ '],
+    'thinking': [' o_o ', ' -_- ', ' ◔_◔ ', ' ◕_◕ '],
     'happy': [' ^_^ ', ' ◡_◡ ', ' ≧◡≦ ', ' ★_★ ', ' ♥_♥ '],
     'clever': [' >_> ', ' ᓚ_ᗢ ', ' ¬_¬ ', '   シ ', ' ✌_✌ '],
     'sad': [' T_T ', ' •_• ']
@@ -13,6 +14,125 @@ const ANIMATION_CONFIG = {
     FRAME_DURATION: 600,
     INITIAL_DELAY: 1000
 };
+
+// Функция для определения мобильного устройства
+function isMobileDevice(): boolean {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+           window.innerWidth <= 768;
+}
+
+function smartFocusManagement(): void {
+    const chatInput = document.getElementById('chat-input') as HTMLInputElement;
+    if (!chatInput) return;
+    
+    if (!isMobileDevice()) {
+        chatInput.focus();
+    }
+}
+
+// Функция для скролла к низу контейнера
+function scrollToBottom(): void {
+    const chatMessages = document.getElementById('chat-messages') as HTMLDivElement;
+    if (!chatMessages) return;
+    
+    // Небольшая задержка для гарантии что DOM обновился
+    setTimeout(() => {
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }, 10);
+}
+
+// Функция анимации эмодзи
+function startEmojiAnimation(emojiElement: HTMLSpanElement, mood: keyof typeof EMOJI_ANIMATIONS): number {
+    const frames = EMOJI_ANIMATIONS[mood];
+    let currentFrame = 0;
+    
+    emojiElement.textContent = frames[currentFrame];
+    
+    return window.setInterval(() => {
+        currentFrame = (currentFrame + 1) % frames.length;
+        emojiElement.textContent = frames[currentFrame];
+    }, ANIMATION_CONFIG.FRAME_DURATION);
+}
+
+// Вспомогательные функции для управления анимацией
+function stopEmojiAnimation(messageElement: HTMLDivElement): void {
+    const intervalId = (messageElement as any)._emojiInterval;
+    if (intervalId) {
+        clearInterval(intervalId);
+        (messageElement as any)._emojiInterval = null;
+    }
+}
+
+function removeEmojiIndicator(messageElement: HTMLDivElement): void {
+    const emojiIndicator = (messageElement as any)._emojiIndicator;
+    if (emojiIndicator && emojiIndicator.parentNode) {
+        emojiIndicator.parentNode.removeChild(emojiIndicator);
+    }
+}
+
+function appendMessage(text: string, sender: 'user' | 'assistant', isLoading = false): HTMLDivElement {
+    const messageElement = document.createElement('div');
+    messageElement.classList.add('message');
+
+    // Контейнер для содержимого сообщения
+    const contentContainer = document.createElement('div');
+    contentContainer.style.display = 'flex';
+    contentContainer.style.alignItems = 'flex-start';
+    contentContainer.style.gap = '10px';
+
+    // Эмодзи-индикатор (только для ассистента при загрузке)
+    let emojiIndicator: HTMLSpanElement | null = null;
+    let emojiInterval: number | null = null;
+
+    if (sender === 'assistant' && isLoading) {
+        emojiIndicator = document.createElement('span');
+        emojiIndicator.style.cssText = `
+            font-size: 16px;
+            min-width: 30px;
+            height: 20px;
+            display: inline-block;
+            text-align: center;
+        `;
+        contentContainer.appendChild(emojiIndicator);
+    }
+
+    const p = document.createElement('p');
+    p.textContent = text;
+    p.style.margin = '0';
+    p.style.flex = '1';
+    
+    contentContainer.appendChild(p);
+    messageElement.appendChild(contentContainer);
+
+    if (sender === 'user') {
+        messageElement.classList.add('user-message');
+    } else {
+        messageElement.classList.add('assistant-message');
+    }
+
+    if (isLoading) {
+        messageElement.classList.add('loading-indicator');
+        
+        // Запускаем анимацию эмодзи
+        if (emojiIndicator) {
+            const intervalId = startEmojiAnimation(emojiIndicator, 'thinking');
+            (messageElement as any)._emojiInterval = intervalId;
+        }
+    }
+
+    const chatMessages = document.getElementById('chat-messages') as HTMLDivElement;
+    if (chatMessages) {
+        chatMessages.appendChild(messageElement);
+        
+        // Автоматический скролл к низу при добавлении сообщения
+        scrollToBottom();
+    }
+    
+    // Сохраняем ссылки для очистки
+    (messageElement as any)._emojiIndicator = emojiIndicator;
+
+    return messageElement;
+}
 
 function initializeChat() {
     const chatForm = document.getElementById('chat-form') as HTMLFormElement;
@@ -102,6 +222,7 @@ function initializeChat() {
     chatInput.addEventListener('input', updateActivity);
     chatInput.addEventListener('focus', updateActivity);
 
+    // Обработчик отправки сообщения
     chatForm.addEventListener('submit', async (event) => {
         event.preventDefault();
         updateActivity();
@@ -182,114 +303,16 @@ function initializeChat() {
             scrollToBottom();
         } finally {
             chatInput.disabled = false;
-            chatInput.focus();
+            
+            // Условный автофокус: только для десктопных устройств
+            if (!isMobileDevice()) {
+                chatInput.focus();
+            }
         }
     });
 
-    // Вспомогательные функции для управления анимацией (без изменений)
-    function stopEmojiAnimation(messageElement: HTMLDivElement): void {
-        const intervalId = (messageElement as any)._emojiInterval;
-        if (intervalId) {
-            clearInterval(intervalId);
-            (messageElement as any)._emojiInterval = null;
-        }
-    }
-
-    function removeEmojiIndicator(messageElement: HTMLDivElement): void {
-        const emojiIndicator = (messageElement as any)._emojiIndicator;
-        if (emojiIndicator && emojiIndicator.parentNode) {
-            emojiIndicator.parentNode.removeChild(emojiIndicator);
-        }
-    }
-
-    function appendMessage(text: string, sender: 'user' | 'assistant', isLoading = false): HTMLDivElement {
-        const messageElement = document.createElement('div');
-        messageElement.classList.add('message');
-
-        // Контейнер для содержимого сообщения
-        const contentContainer = document.createElement('div');
-        contentContainer.style.display = 'flex';
-        contentContainer.style.alignItems = 'flex-start';
-        contentContainer.style.gap = '10px';
-
-        // Эмодзи-индикатор (только для ассистента при загрузке)
-        let emojiIndicator: HTMLSpanElement | null = null;
-        let emojiInterval: number | null = null;
-
-        if (sender === 'assistant' && isLoading) {
-            emojiIndicator = document.createElement('span');
-            emojiIndicator.style.cssText = `
-                font-size: 16px;
-                min-width: 30px;
-                height: 20px;
-                display: inline-block;
-                text-align: center;
-            `;
-            contentContainer.appendChild(emojiIndicator);
-        }
-
-        const p = document.createElement('p');
-        p.textContent = text;
-        p.style.margin = '0';
-        p.style.flex = '1';
-        
-        contentContainer.appendChild(p);
-        messageElement.appendChild(contentContainer);
-
-        if (sender === 'user') {
-            messageElement.classList.add('user-message');
-        } else {
-            messageElement.classList.add('assistant-message');
-        }
-
-        if (isLoading) {
-            messageElement.classList.add('loading-indicator');
-            
-            // Запускаем анимацию эмодзи
-            if (emojiIndicator) {
-                startEmojiAnimation(emojiIndicator, 'thinking');
-            }
-        }
-
-        const chatMessages = document.getElementById('chat-messages') as HTMLDivElement;
-        chatMessages.appendChild(messageElement);
-        
-        // Автоматический скролл к низу при добавлении сообщения
-        scrollToBottom();
-        
-        // Сохраняем ссылки для очистки
-        if (emojiInterval) {
-            (messageElement as any)._emojiInterval = emojiInterval;
-        }
-        (messageElement as any)._emojiIndicator = emojiIndicator;
-
-        return messageElement;
-    }
-
-    // Функция для скролла к низу контейнера
-    function scrollToBottom(): void {
-        const chatMessages = document.getElementById('chat-messages') as HTMLDivElement;
-        // Небольшая задержка для гарантии что DOM обновился
-        setTimeout(() => {
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        }, 10);
-    }
-
-    // Функция анимации эмодзи
-    function startEmojiAnimation(emojiElement: HTMLSpanElement, mood: keyof typeof EMOJI_ANIMATIONS): number {
-        const frames = EMOJI_ANIMATIONS[mood];
-        let currentFrame = 0;
-        
-        emojiElement.textContent = frames[currentFrame];
-        
-        return window.setInterval(() => {
-            currentFrame = (currentFrame + 1) % frames.length;
-            emojiElement.textContent = frames[currentFrame];
-        }, ANIMATION_CONFIG.FRAME_DURATION);
-    }
-
-    // Добавляем кнопку очистки истории
     addClearHistoryButton();
+    smartFocusManagement();
 
     // Запускаем периодическую проверку очистки (каждые 5 минут)
     setInterval(() => {
