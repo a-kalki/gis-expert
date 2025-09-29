@@ -1,5 +1,6 @@
+// src/ui/tracker.ts
 // Модуль для сбора и отправки аналитики поведения пользователей
-import UserIdManager from './user-id-manager.js';
+import ChatSessionManager from './chat-session-manager.js';
 
 console.log("Трекер аналитики загружен.");
 
@@ -9,12 +10,21 @@ interface NavigationEvent {
   toTab: string;
   scroll_perc: number;
   timestamp: string;
-  action?: string; // For 'clicked_form_link'
-  fromPage?: string; // For 'clicked_form_link'
+  action?: string;
+  fromPage?: string;
 }
 
 interface SectionViewTimes {
-  [key: string]: number; // Section name to time spent in seconds
+  [key: string]: number;
+}
+
+interface DeviceInfo {
+  isMobile: boolean;
+  userAgent: string;
+  browser: string;
+  platform: string;
+  screenWidth: number;
+  screenHeight: number;
 }
 
 interface AnalyticsState {
@@ -27,6 +37,7 @@ interface AnalyticsState {
   finalAction: string;
   navigationPath: NavigationEvent[];
   sectionViewTimes: SectionViewTimes;
+  deviceInfo: DeviceInfo;
 }
 
 interface TrackerData {
@@ -38,6 +49,7 @@ interface TrackerData {
   finalAction: string;
   navigationPath: NavigationEvent[];
   sectionViewTimes: SectionViewTimes;
+  deviceInfo: DeviceInfo;
 }
 
 // --- Хранилище данных и состояния ---
@@ -48,25 +60,57 @@ const analyticsState: AnalyticsState = {
   startTime: null,
   timeSpent_sec: 0,
   scrollDepth_perc: 0,
-  finalAction: 'close',
+  finalAction: 'close', // По умолчанию - закрытие
   navigationPath: [],
   sectionViewTimes: {},
+  deviceInfo: {
+    isMobile: false,
+    userAgent: '',
+    browser: 'unknown',
+    platform: 'unknown',
+    screenWidth: 0,
+    screenHeight: 0
+  }
 };
 
-// Вспомогательные переменные для замера времени на секциях
-const sectionEntryTimes: Map<string, number> = new Map(); // Хранит время входа секции в видимую зону
+// Вспомогательные переменные
+const sectionEntryTimes: Map<string, number> = new Map();
+let dataSent = false;
 
-// --- Основные функции трекера ---
+// --- Вспомогательные функции ---
 
 /**
- * Получает или генерирует уникальный ID пользователя из localStorage.
+ * Определяет информацию об устройстве и браузере
  */
-function getOrSetUserId(): string {
-  return UserIdManager.getOrCreateUserId();
+function getDeviceInfo(): DeviceInfo {
+  const ua = navigator.userAgent;
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua) || window.innerWidth <= 768;
+  
+  let browser = 'unknown';
+  if (ua.includes('Chrome') && !ua.includes('Edg')) browser = 'chrome';
+  else if (ua.includes('Firefox')) browser = 'firefox';
+  else if (ua.includes('Safari') && !ua.includes('Chrome')) browser = 'safari';
+  else if (ua.includes('Edg')) browser = 'edge';
+  
+  return {
+    isMobile,
+    userAgent: ua,
+    browser,
+    platform: navigator.platform,
+    screenWidth: window.screen.width,
+    screenHeight: window.screen.height
+  };
 }
 
 /**
- * Инициализирует IntersectionObserver для отслеживания времени просмотра секций.
+ * Получает или генерирует уникальный ID пользователя
+ */
+function getOrSetUserId(): string {
+  return ChatSessionManager.getOrCreateUserId();
+}
+
+/**
+ * Инициализирует отслеживание времени просмотра секций
  */
 function initSectionViewTimeObserver(): void {
   console.log("Инициализация отслеживания времени на секциях.");
@@ -78,17 +122,16 @@ function initSectionViewTimeObserver(): void {
     const now: number = Date.now();
     entries.forEach((entry: IntersectionObserverEntry) => {
       const sectionName: string | undefined = (entry.target as HTMLElement).dataset.trackViewTime;
-      if (sectionName) { // Ensure sectionName is not undefined
+      if (sectionName) {
         if (entry.isIntersecting) {
           sectionEntryTimes.set(sectionName, now);
         } else {
           if (sectionEntryTimes.has(sectionName)) {
-            const entryTime: number = sectionEntryTimes.get(sectionName)!; // ! asserts non-null
+            const entryTime: number = sectionEntryTimes.get(sectionName)!;
             const duration: number = now - entryTime;
 
             const currentTotal: number = analyticsState.sectionViewTimes[sectionName] || 0;
             analyticsState.sectionViewTimes[sectionName] = currentTotal + duration;
-
             sectionEntryTimes.delete(sectionName);
           }
         }
@@ -103,13 +146,80 @@ function initSectionViewTimeObserver(): void {
 }
 
 /**
- * Запускает сбор всех основных метрик: время сессии, скролл, клики и т.д.
+ * Инициализирует отслеживание переходов по вкладкам (для details.html)
+ */
+function initTabTracking(): void {
+  console.log("Запущена логика отслеживания вкладок для details.html");
+  
+  let currentTab: string = 'unknown_tab';
+  const activeTabButton = document.querySelector('.tabs .tablink.w3-white');
+  if (activeTabButton) {
+    currentTab = activeTabButton.getAttribute('data-tabname') || 'unknown_tab';
+  }
+
+  document.body.addEventListener('click', (event: MouseEvent) => {
+    const tabButton: HTMLElement | null = (event.target as HTMLElement).closest('[data-tabname]');
+    if (!tabButton) return;
+
+    const toTab: string | null = tabButton.getAttribute('data-tabname');
+    if (toTab === currentTab) return;
+
+    const eventData: NavigationEvent = {
+      fromTab: currentTab,
+      toTab: toTab || 'unknown_tab',
+      scroll_perc: Math.round(analyticsState.scrollDepth_perc),
+      timestamp: new Date().toISOString(),
+    };
+
+    analyticsState.navigationPath.push(eventData);
+    console.log('Переход по вкладке:', eventData);
+    currentTab = toTab || 'unknown_tab';
+  });
+}
+
+/**
+ * Обрабатывает клики по ссылкам с аналитикой - ОСНОВНАЯ ЛОГИКА!
+ */
+function initLinkTracking(): void {
+  // Отслеживание всех кликов по ссылкам с data-analytics-action
+  document.body.addEventListener('click', (event: MouseEvent) => {
+    const targetElement: HTMLElement | null = (event.target as HTMLElement).closest('[data-analytics-action]');
+    
+    if (targetElement && targetElement.tagName === 'A') {
+      const action = targetElement.getAttribute('data-analytics-action') || 'unknown_link';
+      
+      // НЕМЕДЛЕННО обновляем finalAction для этого перехода
+      analyticsState.finalAction = action;
+      console.log(`Зафиксирован переход по ссылке: ${action}`);
+      
+      // Сразу отправляем данные перед переходом
+      setTimeout(() => sendAnalyticsData(), 10);
+    }
+  });
+
+  // Обработка ссылок на форму - добавляем userId
+  const formLinks: NodeListOf<HTMLAnchorElement> = document.querySelectorAll('a[href*="form"][data-analytics-action]');
+  formLinks.forEach(formLink => {
+    if (analyticsState.userId) {
+      const originalHref = formLink.getAttribute('href');
+      if (originalHref && !originalHref.includes('userId=')) {
+        const separator = originalHref.includes('?') ? '&' : '?';
+        formLink.href = `${originalHref}${separator}userId=${analyticsState.userId}`;
+        console.log('Ссылка на анкету обновлена:', formLink.href);
+      }
+    }
+  });
+}
+
+/**
+ * Запускает сбор всех основных метрик
  */
 function startMetricsCollection(): void {
   console.log("Начало сбора метрик: время, скролл, клики...");
 
   analyticsState.startTime = Date.now();
 
+  // Отслеживание скролла
   window.addEventListener('scroll', () => {
     const scrollTop: number = window.scrollY;
     const docHeight: number = document.documentElement.scrollHeight;
@@ -124,95 +234,127 @@ function startMetricsCollection(): void {
     analyticsState.scrollDepth_perc = Math.max(analyticsState.scrollDepth_perc || 0, scrollPercent);
   }, { passive: true });
 
-  document.body.addEventListener('click', (event: MouseEvent) => {
-    const targetElement: HTMLElement | null = (event.target as HTMLElement).closest('[data-analytics-action]');
-    if (targetElement) {
-      analyticsState.finalAction = targetElement.getAttribute('data-analytics-action') || 'unknown_action';
-      console.log(`Зафиксировано действие: ${analyticsState.finalAction}`);
-    }
-  });
-
-// Логика отслеживания переходов по вкладкам (только для details.html)
-    if (document.querySelector('meta[name="page-name"][content="details"]')) {
-      console.log("Запущена логика отслеживания вкладок для details.html");
-    let currentTab: string = 'unknown_tab';
-    const activeTabButton = document.querySelector('.tabs .tablink.w3-white');
-    if (activeTabButton) {
-      currentTab = activeTabButton.getAttribute('data-tabname') || 'unknown_tab';
-    }
-
-    document.body.addEventListener('click', (event: MouseEvent) => {
-      const tabButton: HTMLElement | null = (event.target as HTMLElement).closest('[data-tabname]');
-      if (!tabButton) return;
-
-      const toTab: string | null = tabButton.getAttribute('data-tabname');
-      if (toTab === currentTab) return;
-
-      const eventData: NavigationEvent = {
-        fromTab: currentTab,
-        toTab: toTab || 'unknown_tab',
-        scroll_perc: Math.round(analyticsState.scrollDepth_perc),
-        timestamp: new Date().toISOString(),
-      };
-
-      analyticsState.navigationPath.push(eventData);
-      console.log('Переход по вкладке:', eventData);
-      currentTab = toTab || 'unknown_tab';
-    });
-
-    window.addEventListener('beforeunload', () => {
-      analyticsState.finalAction = `close_on_tab_${currentTab}`;
-    });
+  // Отслеживание вкладок для details.html
+  if (analyticsState.pageName === 'details') {
+    initTabTracking();
   }
 
-  window.addEventListener('beforeunload', () => {
+  // Отслеживание ссылок - ОСНОВНАЯ ЛОГИКА!
+  initLinkTracking();
+
+  // Гарантированная отправка при уходе со страницы
+  setupUnloadHandlers();
+}
+
+/**
+ * Настраивает обработчики для гарантированной отправки данных при уходе
+ */
+function setupUnloadHandlers(): void {
+  const sendBeforeUnload = () => {
+    if (dataSent) return;
+    
     const now: number = Date.now();
+    
+    // Финализируем время просмотра секций
     sectionEntryTimes.forEach((entryTime: number, sectionName: string) => {
       const duration: number = now - entryTime;
       const currentTotal: number = analyticsState.sectionViewTimes[sectionName] || 0;
       analyticsState.sectionViewTimes[sectionName] = currentTotal + duration;
     });
 
+    // Конвертируем время в секунды
     for (const sectionName in analyticsState.sectionViewTimes) {
-        analyticsState.sectionViewTimes[sectionName] = parseFloat((analyticsState.sectionViewTimes[sectionName] / 1000).toFixed(1));
+      analyticsState.sectionViewTimes[sectionName] = parseFloat((analyticsState.sectionViewTimes[sectionName] / 1000).toFixed(1));
     }
 
+    // Вычисляем общее время
     analyticsState.timeSpent_sec = Math.round((now - (analyticsState.startTime || now)) / 1000);
     analyticsState.scrollDepth_perc = Math.round(analyticsState.scrollDepth_perc);
 
-    sendData(analyticsState);
-  });
+    // Если finalAction не был установлен ссылкой, оставляем 'close'
+    if (analyticsState.finalAction === 'close') {
+      // Для details.html добавляем информацию о текущей вкладке
+      if (analyticsState.pageName === 'details') {
+        const activeTabButton = document.querySelector('.tabs .tablink.w3-white');
+        if (activeTabButton) {
+          const currentTab = activeTabButton.getAttribute('data-tabname') || 'unknown_tab';
+          analyticsState.finalAction = `close_on_tab_${currentTab}`;
+        }
+      }
+    }
+
+    sendAnalyticsData();
+  };
+
+  // Обработчики для ухода со страницы
+  window.addEventListener('beforeunload', sendBeforeUnload);
+  window.addEventListener('pagehide', sendBeforeUnload);
 }
 
 /**
- * Отправляет собранные данные на сервер.
+ * Отправляет собранные данные на сервер
  */
-function sendData(data: TrackerData): void {
-  const MIN_TIME_SPENT_SEC = 3;
-  if (data.timeSpent_sec < MIN_TIME_SPENT_SEC) {
-    console.log(`Сессия слишком короткая (${data.timeSpent_sec} сек). Данные не отправлены.`);
+function sendAnalyticsData(): void {
+  if (dataSent) {
+    console.log('Данные уже отправлены, пропускаем');
     return;
   }
+
+  const MIN_TIME_SPENT_SEC = 3;
+  if (analyticsState.timeSpent_sec < MIN_TIME_SPENT_SEC) {
+    console.log(`Сессия слишком короткая (${analyticsState.timeSpent_sec} сек). Данные не отправлены.`);
+    return;
+  }
+
+  const data: TrackerData = {
+    userId: analyticsState.userId,
+    pageName: analyticsState.pageName,
+    pageVariant: analyticsState.pageVariant,
+    timeSpent_sec: analyticsState.timeSpent_sec,
+    scrollDepth_perc: analyticsState.scrollDepth_perc,
+    finalAction: analyticsState.finalAction,
+    navigationPath: analyticsState.navigationPath,
+    sectionViewTimes: analyticsState.sectionViewTimes,
+    deviceInfo: analyticsState.deviceInfo
+  };
 
   const webhookUrl: string = __API_BASE_URL__ + '/api/track';
 
   try {
-    fetch(webhookUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data),
-      keepalive: true,
-    });
-    console.log("Данные для отправки через Fetch API:", data);
+    // Используем sendBeacon для гарантированной отправки при уходе
+    if (navigator.sendBeacon) {
+      const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
+      if (navigator.sendBeacon(webhookUrl, blob)) {
+        console.log("Данные отправлены через sendBeacon:", data);
+        dataSent = true;
+      } else {
+        // Fallback к fetch с keepalive
+        fetch(webhookUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+          keepalive: true,
+        });
+        console.log("Данные отправлены через fetch (keepalive):", data);
+        dataSent = true;
+      }
+    } else {
+      // Fallback для старых браузеров
+      fetch(webhookUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      console.log("Данные отправлены через fetch:", data);
+      dataSent = true;
+    }
   } catch (error: any) {
-    console.error("Ошибка при отправке данных через fetch:", error);
+    console.error("Ошибка при отправке данных:", error);
   }
 }
 
 /**
- * Главная функция инициализации трекера.
+ * Главная функция инициализации трекера
  */
 function initTracker(): void {
   const pageNameTag: HTMLMetaElement | null = document.querySelector('meta[name="page-name"]');
@@ -220,40 +362,19 @@ function initTracker(): void {
 
   analyticsState.pageName = pageNameTag ? pageNameTag.content : 'unknown';
   analyticsState.pageVariant = pageVariantTag ? pageVariantTag.content : 'unknown';
+  analyticsState.deviceInfo = getDeviceInfo();
+  analyticsState.userId = getOrSetUserId();
 
   console.log(`Трекер запущен на странице: ${analyticsState.pageName} (вариант: ${analyticsState.pageVariant})`);
+  console.log('Информация об устройстве:', analyticsState.deviceInfo);
 
-  analyticsState.userId = getOrSetUserId();
   startMetricsCollection();
   initSectionViewTimeObserver();
-
-  // Generalize form link handling
-  const formLinks: NodeListOf<HTMLAnchorElement> = document.querySelectorAll('a[href*="form.html"][data-analytics-action]');
-  formLinks.forEach(formLink => {
-    if (analyticsState.userId) {
-      const originalHref = formLink.getAttribute('href');
-      if (originalHref && !originalHref.includes('userId=')) {
-        const separator = originalHref.includes('?') ? '&' : '?';
-        formLink.href = `${originalHref}${separator}userId=${analyticsState.userId}`;
-        formLink.removeAttribute('target');
-        console.log('Ссылка на анкету обновлена:', formLink.href);
-      }
-
-      formLink.addEventListener('click', () => {
-        const eventData: NavigationEvent = {
-          action: formLink.getAttribute('data-analytics-action') || 'clicked_form_link',
-          fromPage: analyticsState.pageName,
-          timestamp: new Date().toISOString(),
-          fromTab: analyticsState.pageName, // Add fromTab for consistency
-          toTab: 'form_page', // Add toTab for consistency
-          scroll_perc: Math.round(analyticsState.scrollDepth_perc), // Add scroll_perc for consistency
-        };
-        analyticsState.navigationPath.push(eventData);
-        console.log('Зафиксирован клик по ссылке на анкету:', eventData);
-      });
-    }
-  });
 }
 
 // Запускаем трекер после полной загрузки страницы
-window.addEventListener('load', initTracker);
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initTracker);
+} else {
+  initTracker();
+}

@@ -37,7 +37,10 @@ export async function up(db: Db): Promise<void> {
       scroll_depth_perc INTEGER,
       final_action TEXT,
       navigation_path TEXT,
-      section_view_times TEXT
+      section_view_times TEXT,
+      device_info TEXT, -- Новое поле для информации об устройстве
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
   `);
 }

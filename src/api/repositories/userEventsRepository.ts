@@ -1,5 +1,17 @@
 import { Database } from 'bun:sqlite';
 
+interface AnalyticsData {
+  userId: string;
+  pageName: string;
+  pageVariant: string;
+  timeSpent_sec: number;
+  scrollDepth_perc: number;
+  finalAction: string;
+  navigationPath: any;
+  sectionViewTimes: any;
+  deviceInfo: any; // Новое поле
+}
+
 export class UserEventsRepository {
   private db: Database;
 
@@ -7,16 +19,7 @@ export class UserEventsRepository {
     this.db = db;
   }
 
-  public save(data: {
-    userId: string;
-    pageName: string;
-    pageVariant: string;
-    timeSpent_sec: number;
-    scrollDepth_perc: number;
-    finalAction: string;
-    navigationPath: any; // Will be stringified JSON
-    sectionViewTimes: any; // Will be stringified JSON
-  }): void {
+  public save(data: AnalyticsData): void {
     const stmt = this.db.prepare(`
       INSERT INTO user_events (
           received_at,
@@ -27,7 +30,8 @@ export class UserEventsRepository {
           scroll_depth_perc,
           final_action,
           navigation_path,
-          section_view_times
+          section_view_times,
+          device_info
       ) VALUES (
           datetime('now'),
           @userId,
@@ -37,7 +41,8 @@ export class UserEventsRepository {
           @scrollDepth_perc,
           @finalAction,
           @navigationPath,
-          @sectionViewTimes
+          @sectionViewTimes,
+          @deviceInfo
       )
     `);
 
@@ -49,7 +54,8 @@ export class UserEventsRepository {
       "@scrollDepth_perc": data.scrollDepth_perc,
       "@finalAction": data.finalAction,
       "@navigationPath": JSON.stringify(data.navigationPath || []),
-      "@sectionViewTimes": JSON.stringify(data.sectionViewTimes || {})
+      "@sectionViewTimes": JSON.stringify(data.sectionViewTimes || {}),
+      "@deviceInfo": JSON.stringify(data.deviceInfo || {}) // Новое поле
     });
   }
 

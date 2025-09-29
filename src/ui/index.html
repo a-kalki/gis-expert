@@ -459,14 +459,14 @@
       <h2>Хочешь изучить все до мелочей?</h2>
       <p class="intro-text">
         Программа модулей, отзывы студентов и "закулисье". 
-        <a href="/details" class="site-link">Посети сайт</a>, он создавался как раз для этого, 
+        <a href="/details" data-analytics-action="to_details_from_landing" class="site-link">Посети сайт</a>, он создавался как раз для этого, 
         или спроси моего ИИ-ассистента.
       </p>
       
       <div id="chat-container">
         <div id="chat-messages">
           <div class="message assistant-message">
-            <p>Привет! Я ИИ-ассистент, который помогает Нурболату отвечать на вопросы. Все мои ответы основаны на подробной информации со <a href="/details" style="color: #007bff; text-decoration: underline;">страницы деталей курса</a>. Спрашивай о программе, преподавателе или условиях - постараюсь помочь! Для сложных вопросов всегда можно связаться с Нурболатом напрямую.</p>
+            <p>Привет! Я ИИ-ассистент, который помогает Нурболату отвечать на вопросы. Все мои ответы основаны на подробной информации со <a href="/details" data-analytics-action="to_details_from_landing" style="color: #007bff; text-decoration: underline;">страницы деталей курса</a>. Спрашивай о программе, преподавателе или условиях - постараюсь помочь! Для сложных вопросов всегда можно связаться с Нурболатом напрямую.</p>
           </div>
         </div>
           <form id="chat-form">
@@ -488,7 +488,7 @@
       <p>Без обязательств, с полным пониманием.</p>
       
       <div class="cta-buttons">
-        <a href="/form" class="btn btn-primary" data-analytics-action="sign_for_trial">Заполнить анкету</a>
+        <a href="/form" class="btn btn-primary" data-analytics-action="to_form_from_landing">Заполнить анкету</a>
       </div>
     </div>
   </div>
@@ -499,7 +499,7 @@
     </div>
   </footer>
 
-  <script type="module" src="user-id-manager.js"></script>
+  <script type="module" src="chat-session-manager.js"></script>
   <script type="module" src="tracker.js" defer></script>
   <script type="module" src="chat-logic.js" defer></script>
 </body>

@@ -1,5 +1,4 @@
-// src/ui/chat-logic.ts
-import UserIdManager from './user-id-manager.js';
+import ChatSessionManager from './chat-session-manager.js';
 
 // Конфигурация эмодзи-анимаций
 const EMOJI_ANIMATIONS = {
@@ -35,7 +34,6 @@ function scrollToBottom(): void {
     const chatMessages = document.getElementById('chat-messages') as HTMLDivElement;
     if (!chatMessages) return;
     
-    // Небольшая задержка для гарантии что DOM обновился
     setTimeout(() => {
         chatMessages.scrollTop = chatMessages.scrollHeight;
     }, 10);
@@ -123,12 +121,9 @@ function appendMessage(text: string, sender: 'user' | 'assistant', isLoading = f
     const chatMessages = document.getElementById('chat-messages') as HTMLDivElement;
     if (chatMessages) {
         chatMessages.appendChild(messageElement);
-        
-        // Автоматический скролл к низу при добавлении сообщения
         scrollToBottom();
     }
     
-    // Сохраняем ссылки для очистки
     (messageElement as any)._emojiIndicator = emojiIndicator;
 
     return messageElement;
@@ -144,52 +139,44 @@ function initializeChat() {
         return;
     }
 
-    // Очищаем просроченную историю при загрузке
-    UserIdManager.cleanupExpiredHistory();
-
-    const userId = UserIdManager.getOrCreateUserId();
+    // Очищаем чат при загрузке (на случай просроченной сессии)
+    clearChatMessages();
 
     // Обновляем время активности при любом взаимодействии
     function updateActivity() {
-        UserIdManager.updateLastActivity();
+        ChatSessionManager.updateLastActivity();
     }
 
-    // Функция для восстановления истории из localStorage
-    function loadChatHistory(): void {
-        const savedHistory = localStorage.getItem(UserIdManager.getChatHistoryKey());
-        if (savedHistory) {
-            try {
-                const history = JSON.parse(savedHistory);
-                const recentHistory = history.slice(-10); // Показываем последние 10 сообщений
-                
-                recentHistory.forEach((msg: { role: string; content: string }) => {
-                    appendMessage(msg.content, msg.role as 'user' | 'assistant');
-                });
+    // Функция для загрузки валидной истории
+    function loadValidChatHistory(): void {
+        const history = ChatSessionManager.getValidHistory();
+        
+        if (history.length > 0) {
+            const recentHistory = history.slice(-10); // Показываем последние 10 сообщений
+            
+            recentHistory.forEach((msg: { role: string; content: string }) => {
+                appendMessage(msg.content, msg.role as 'user' | 'assistant');
+            });
 
-                // Показываем уведомление о восстановленной истории
-                showHistoryRestoredNotification();
-            } catch (error) {
-                console.error('Error loading chat history:', error);
-                localStorage.removeItem(UserIdManager.getChatHistoryKey());
-            }
+            showHistoryRestoredNotification();
         }
     }
 
-    // Функция для сохранения сообщения в историю
-    function saveMessageToHistory(content: string, role: 'user' | 'assistant'): void {
-        const key = UserIdManager.getChatHistoryKey();
-        const existingHistory = localStorage.getItem(key);
-        const messages = existingHistory ? JSON.parse(existingHistory) : [];
+    // Очистка сообщений в чате
+    function clearChatMessages(): void {
+        // Оставляем только первоначальное приветственное сообщение
+        const welcomeMessage = chatMessages.querySelector('.assistant-message');
+        chatMessages.innerHTML = '';
         
-        messages.push({ 
-            role, 
-            content, 
-            timestamp: Date.now() 
-        });
-        
-        // Сохраняем только последние 20 сообщений
-        const trimmedHistory = messages.slice(-20);
-        localStorage.setItem(key, JSON.stringify(trimmedHistory));
+        if (welcomeMessage) {
+            chatMessages.appendChild(welcomeMessage);
+        } else {
+            // Если приветственного сообщения нет, создаем стандартное
+            const defaultMessage = document.createElement('div');
+            defaultMessage.className = 'message assistant-message';
+            defaultMessage.innerHTML = '<p>Привет! Я ИИ-ассистент, который помогает Нурболату отвечать на вопросы. Все мои ответы основаны на подробной информации со <a href="/details" style="color: #007bff; text-decoration: underline;">страницы деталей курса</a>. Спрашивай о программе, преподавателе или условиях - постараюсь помочь!</p>';
+            chatMessages.appendChild(defaultMessage);
+        }
     }
 
     // Уведомление о восстановленной истории
@@ -216,7 +203,7 @@ function initializeChat() {
     }
 
     // Загружаем историю при инициализации
-    loadChatHistory();
+    loadValidChatHistory();
 
     // Обновляем активность при вводе текста
     chatInput.addEventListener('input', updateActivity);
@@ -232,7 +219,7 @@ function initializeChat() {
 
         // 1. Отобразить вопрос пользователя
         appendMessage(userQuestion, 'user');
-        saveMessageToHistory(userQuestion, 'user');
+        ChatSessionManager.saveMessageToHistory(userQuestion, 'user');
         
         chatInput.value = '';
         chatInput.disabled = true;
@@ -242,6 +229,7 @@ function initializeChat() {
 
         try {
             // 3. Отправить запрос на сервер
+            const userId = ChatSessionManager.getOrCreateUserId();
             const response = await fetch('/api/chat', {
                 method: 'POST',
                 headers: {
@@ -277,89 +265,48 @@ function initializeChat() {
                 const chunk = decoder.decode(value, { stream: true });
                 fullResponse += chunk;
                 contentP.textContent = fullResponse;
-                
-                // Скроллим к низу во время потоковой передачи
                 scrollToBottom();
             }
 
-            // Финальный скролл после завершения
             scrollToBottom();
-
-            // Сохраняем ответ ассистента в историю
-            saveMessageToHistory(fullResponse, 'assistant');
+            ChatSessionManager.saveMessageToHistory(fullResponse, 'assistant');
 
         } catch (error) {
             console.error('Chat error:', error);
             const errorMessage = 'Ой, что-то пошло не так. Попробуйте еще раз.';
             
-            // Останавливаем анимацию при ошибке
             stopEmojiAnimation(loadingIndicator);
             removeEmojiIndicator(loadingIndicator);
             
             loadingIndicator.querySelector('p')!.textContent = errorMessage;
-            saveMessageToHistory(errorMessage, 'assistant');
-            
-            // Скроллим к ошибке
+            ChatSessionManager.saveMessageToHistory(errorMessage, 'assistant');
             scrollToBottom();
         } finally {
             chatInput.disabled = false;
             
-            // Условный автофокус: только для десктопных устройств
             if (!isMobileDevice()) {
                 chatInput.focus();
             }
         }
     });
 
-    addClearHistoryButton();
     smartFocusManagement();
 
-    // Запускаем периодическую проверку очистки (каждые 5 минут)
+    // Запускаем периодическую проверку очистки (каждую минуту)
     setInterval(() => {
-        UserIdManager.cleanupExpiredHistory();
-    }, 5 * 60 * 1000);
+        if (!ChatSessionManager.isSessionActive()) {
+            // Если сессия истекла, очищаем чат
+            clearChatMessages();
+        }
+    }, 60 * 1000);
 
-    // Показываем таймер до очистки (опционально)
     showCleanupTimer();
 }
 
-function addClearHistoryButton(): void {
-    // Проверяем, не добавлена ли кнопка уже
-    if (document.getElementById('clear-chat-history-btn')) return;
-
-    const clearBtn = document.createElement('button');
-    clearBtn.id = 'clear-chat-history-btn';
-    clearBtn.textContent = '🗑️ Очистить историю';
-    clearBtn.style.cssText = `
-        position: fixed;
-        bottom: 60px;
-        right: 10px;
-        z-index: 1000;
-        padding: 5px 10px;
-        font-size: 12px;
-        background: #f8f9fa;
-        border: 1px solid #dee2e6;
-        border-radius: 3px;
-        cursor: pointer;
-        color: #6c757d;
-    `;
-    
-    clearBtn.addEventListener('click', () => {
-        if (confirm('Очистить историю чата? Это действие нельзя отменить.')) {
-            localStorage.removeItem(UserIdManager.getChatHistoryKey());
-            localStorage.removeItem('lastChatActivity');
-            location.reload();
-        }
-    });
-    
-    document.body.appendChild(clearBtn);
-}
-
 function showCleanupTimer(): void {
-    const timeUntilCleanup = UserIdManager.getTimeUntilCleanup();
+    const timeUntilCleanup = ChatSessionManager.getTimeUntilCleanup();
     const minutesLeft = Math.ceil(timeUntilCleanup / (60 * 1000));
     
-    // Показываем таймер только если осталось меньше 10 минут
     if (minutesLeft < 10) {
         const timer = document.createElement('div');
         timer.id = 'chat-cleanup-timer';
@@ -379,9 +326,8 @@ function showCleanupTimer(): void {
         
         document.body.appendChild(timer);
 
-        // Обновляем таймер каждую минуту
         setInterval(() => {
-            const newTimeLeft = UserIdManager.getTimeUntilCleanup();
+            const newTimeLeft = ChatSessionManager.getTimeUntilCleanup();
             const newMinutesLeft = Math.ceil(newTimeLeft / (60 * 1000));
             
             if (newMinutesLeft <= 0) {

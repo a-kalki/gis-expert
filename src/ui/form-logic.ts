@@ -1,4 +1,5 @@
 import { PhoneValidator } from '../domain/phone';
+import ChatSessionManager from './chat-session-manager.js';
 
 export function showValidationError(element: HTMLElement, message: string) {
   const cardContent = element.querySelector('.card-content');
@@ -95,16 +96,24 @@ export function validateForm(form: HTMLFormElement): boolean {
 
 if (typeof window !== 'undefined' && typeof document !== 'undefined') {
   document.addEventListener('DOMContentLoaded', () => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const userId = urlParams.get('userId');
-    if (userId) {
-      (document.getElementById('userId') as HTMLInputElement).value = userId;
-      console.log('DEBUG: userId из URL:', userId);
+    // Получаем userId из ChatSessionManager вместо URL параметров
+    const userId = ChatSessionManager.getOrCreateUserId();
+    
+    // Находим поле userId в форме и устанавливаем значение
+    const userIdField = document.getElementById('userId') as HTMLInputElement;
+    if (userIdField) {
+      userIdField.value = userId;
+      console.log('DEBUG: userId из ChatSessionManager:', userId);
     } else {
-      console.warn('User ID not found in URL parameters.');
+      console.warn('User ID field not found in form.');
     }
 
     const form = document.getElementById('courseApplicationForm') as HTMLFormElement;
+    if (!form) {
+      console.warn('Course application form not found.');
+      return;
+    }
+
     const phoneInput = form.querySelector<HTMLInputElement>('#phone');
     const countryCodeSelect = form.querySelector<HTMLSelectElement>('#countryCode');
 
@@ -138,8 +147,7 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
         }
       }
 
-      const phoneInput = form.querySelector<HTMLInputElement>('#phone');
-      const countryCodeSelect = form.querySelector<HTMLSelectElement>('#countryCode');
+      // Форматируем телефонный номер
       if (phoneInput && countryCodeSelect) {
         const formattedPhone = PhoneValidator.parseAndFormat(phoneInput.value, countryCodeSelect.value as any);
         if (formattedPhone) {
@@ -147,7 +155,8 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
         }
       }
 
-      data.userId = (document.getElementById('userId') as HTMLInputElement).value;
+      // Убеждаемся, что userId всегда присутствует (из ChatSessionManager)
+      data.userId = userId;
 
       const webhookUrl = __API_BASE_URL__ + '/api/submit-form';
 
@@ -163,6 +172,9 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
         if (response.ok) {
           alert('Анкета успешно отправлена! Спасибо!');
           form.reset();
+          
+          // Обновляем время активности после отправки формы
+          ChatSessionManager.updateLastActivity();
         } else {
           alert('Ошибка при отправке анкеты. Пожалуйста, попробуйте еще раз.');
           console.error('Ошибка отправки формы:', response.status, response.statusText);
