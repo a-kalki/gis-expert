@@ -137,37 +137,40 @@
     text-align: left;
   }
   #chat-messages {
-    height: 300px;
-    overflow-y: auto;
-    margin-bottom: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
+      height: 300px;
+      overflow-y: auto;
+      margin-bottom: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      /* Плавный скролл для автоматической прокрутки */
+      scroll-behavior: smooth;
   }
   .message {
-    padding: 12px 18px;
-    border-radius: 18px;
-    margin-bottom: 10px;
-    max-width: 80%;
-    box-sizing: border-box;
-    font-size: 0.8rem;
-    line-height: 1.5;
+      padding: 12px 18px;
+      border-radius: 18px;
+      margin-bottom: 10px;
+      max-width: 80%;
+      box-sizing: border-box;
+      font-size: 0.8rem;
+      line-height: 1.5;
+  }
+  .user-message {
+      background-color: #00ff99;
+      color: #121212;
+      align-self: flex-end;
+      border-bottom-right-radius: 5px;
+  }
+
+  .assistant-message {
+      background-color: #333;
+      color: #fff;
+      align-self: flex-start;
+      border-bottom-left-radius: 5px;
   }
   .message p {
     margin: 0;
     font-size: 0.8rem;
-  }
-  .user-message {
-    background-color: #00ff99;
-    color: #121212;
-    align-self: flex-end;
-    border-bottom-right-radius: 5px;
-  }
-  .assistant-message {
-    background-color: #333;
-    color: #fff;
-    align-self: flex-start;
-    border-bottom-left-radius: 5px;
   }
   #chat-form {
     display: flex;
@@ -227,6 +230,17 @@
     font-style: italic;
   }
 
+  @keyframes messageAppear {
+      from {
+          opacity: 0;
+          transform: translateY(10px);
+      }
+      to {
+          opacity: 1;
+          transform: translateY(0);
+      }
+  }
+
 /* Адаптивность для мобильных устройств */
   @media (max-width: 768px) {
     #chat-container {
@@ -235,18 +249,25 @@
     }
     
     #chat-messages {
-      height: 250px;
-      gap: 12px;
+        height: 250px;
+        gap: 12px;
     }
     
     .message {
-      max-width: 90%;
-      padding: 10px 14px;
-      font-size: 0.85rem;
+        max-width: 85%;
+        font-size: 0.85rem;
     }
     
     .message p {
       font-size: 0.85rem;
+    }
+
+    .assistant-message {
+        border-bottom-left-radius: 8px;
+    }
+    
+    .user-message {
+        border-bottom-right-radius: 8px;
     }
     
     #chat-form {
@@ -375,13 +396,6 @@
       h2 { font-size: 1.8em; }
       .benefits-grid { grid-template-columns: 1fr; }
       .cta-buttons { flex-direction: column; }
-      .message { 
-        max-width: 90%;
-        font-size: 0.9rem;
-      }
-      .message p {
-        font-size: 0.9rem;
-      }
       .section {
         padding: 40px 15px;
       }
@@ -466,7 +480,6 @@
       
       <div class="cta-buttons">
         <a href="/form" class="btn btn-primary" data-analytics-action="sign_for_trial">Заполнить анкету</a>
-        <a href="/details" class="btn btn-secondary" data-analytics-action="visit_course_details">Изучить сайт</a>
       </div>
     </div>
   </div>
