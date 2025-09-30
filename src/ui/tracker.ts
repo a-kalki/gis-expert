@@ -1,6 +1,5 @@
-// src/ui/tracker.ts
 // Модуль для сбора и отправки аналитики поведения пользователей
-import ChatSessionManager from './chat-session-manager.js';
+import UserSessionManager from './user-session-manager.js';
 
 console.log("Трекер аналитики загружен.");
 
@@ -106,7 +105,7 @@ function getDeviceInfo(): DeviceInfo {
  * Получает или генерирует уникальный ID пользователя
  */
 function getOrSetUserId(): string {
-  return ChatSessionManager.getOrCreateUserId();
+  return UserSessionManager.getOrCreateUserId();
 }
 
 /**
@@ -194,19 +193,6 @@ function initLinkTracking(): void {
       
       // Сразу отправляем данные перед переходом
       setTimeout(() => sendAnalyticsData(), 10);
-    }
-  });
-
-  // Обработка ссылок на форму - добавляем userId
-  const formLinks: NodeListOf<HTMLAnchorElement> = document.querySelectorAll('a[href*="form"][data-analytics-action]');
-  formLinks.forEach(formLink => {
-    if (analyticsState.userId) {
-      const originalHref = formLink.getAttribute('href');
-      if (originalHref && !originalHref.includes('userId=')) {
-        const separator = originalHref.includes('?') ? '&' : '?';
-        formLink.href = `${originalHref}${separator}userId=${analyticsState.userId}`;
-        console.log('Ссылка на анкету обновлена:', formLink.href);
-      }
     }
   });
 }

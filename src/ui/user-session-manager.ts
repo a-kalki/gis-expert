@@ -2,7 +2,7 @@ const CHAT_HISTORY_TTL = 30 * 60 * 1000; // 30 минут
 const USER_ID_KEY = 'chatUserId';
 const LAST_ACTIVITY_KEY = 'lastChatActivity';
 
-class ChatSessionManager {
+class UserSessionManager {
     // Получить или создать ID пользователя
     static getOrCreateUserId(): string {
         let userId = localStorage.getItem(USER_ID_KEY);
@@ -135,4 +135,4 @@ class ChatSessionManager {
     }
 }
 
-export default ChatSessionManager;
+export default UserSessionManager;

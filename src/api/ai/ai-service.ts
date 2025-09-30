@@ -7,7 +7,7 @@ export type ChatMessage = {
   timestamp?: number;
 };
 
-export interface ChatSession {
+export interface UserChatSession {
   userId: string;
   messages: ChatMessage[];
   lastActivity: number;
@@ -16,7 +16,7 @@ export interface ChatSession {
 export abstract class AIService {
   protected systemPrompt = '';
   protected aiContext = '';
-  private sessions: Map<string, ChatSession>;
+  private sessions: Map<string, UserChatSession>;
   private readonly SESSION_TIMEOUT_MS = 60 * 60 * 1000; // 1 час
   private readonly MAX_HISTORY_LENGTH = 20;
 
@@ -48,7 +48,7 @@ export abstract class AIService {
   }
 
   // Управление сессиями
-  private getOrCreateSession(userId: string): ChatSession {
+  private getOrCreateSession(userId: string): UserChatSession {
     let session = this.sessions.get(userId);
     
     if (!session) {

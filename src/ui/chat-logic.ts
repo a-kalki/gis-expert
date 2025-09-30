@@ -1,4 +1,4 @@
-import ChatSessionManager from './chat-session-manager.js';
+import UserSessionManager from './user-session-manager.js';
 
 // Конфигурация эмодзи-анимаций
 const EMOJI_ANIMATIONS = {
@@ -14,19 +14,22 @@ const ANIMATION_CONFIG = {
     INITIAL_DELAY: 1000
 };
 
+function checkScroll() {
+    const chatMessages = document.getElementById('chat-messages');
+    if (chatMessages) {
+        console.log('Chat messages height:', chatMessages.scrollHeight);
+        console.log('Chat messages client height:', chatMessages.clientHeight);
+        console.log('Can scroll:', chatMessages.scrollHeight > chatMessages.clientHeight);
+    }
+}
+
+// Вызовите после добавления сообщения
+setTimeout(checkScroll, 100);
+
 // Функция для определения мобильного устройства
 function isMobileDevice(): boolean {
     return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
            window.innerWidth <= 768;
-}
-
-function smartFocusManagement(): void {
-    const chatInput = document.getElementById('chat-input') as HTMLInputElement;
-    if (!chatInput) return;
-    
-    if (!isMobileDevice()) {
-        chatInput.focus();
-    }
 }
 
 // Функция для скролла к низу контейнера
@@ -80,7 +83,6 @@ function appendMessage(text: string, sender: 'user' | 'assistant', isLoading = f
 
     // Эмодзи-индикатор (только для ассистента при загрузке)
     let emojiIndicator: HTMLSpanElement | null = null;
-    let emojiInterval: number | null = null;
 
     if (sender === 'assistant' && isLoading) {
         emojiIndicator = document.createElement('span');
@@ -144,12 +146,27 @@ function initializeChat() {
 
     // Обновляем время активности при любом взаимодействии
     function updateActivity() {
-        ChatSessionManager.updateLastActivity();
+        UserSessionManager.updateLastActivity();
+    }
+
+    function smartFocusManagement(): void {
+        // Теперь фокус управляется через ChatManager
+        const chatManager = window.chatManager;
+        
+        // Можно добавить фокус при клике на контейнер чата
+        const chatContainer = document.getElementById('chat-container');
+        if (chatContainer) {
+            chatContainer.addEventListener('click', () => {
+                if (chatInput && !isMobileDevice() && chatManager.isOpen()) {
+                    chatInput.focus();
+                }
+            });
+        }
     }
 
     // Функция для загрузки валидной истории
     function loadValidChatHistory(): void {
-        const history = ChatSessionManager.getValidHistory();
+        const history = UserSessionManager.getValidHistory();
         
         if (history.length > 0) {
             const recentHistory = history.slice(-10); // Показываем последние 10 сообщений
@@ -219,7 +236,7 @@ function initializeChat() {
 
         // 1. Отобразить вопрос пользователя
         appendMessage(userQuestion, 'user');
-        ChatSessionManager.saveMessageToHistory(userQuestion, 'user');
+        UserSessionManager.saveMessageToHistory(userQuestion, 'user');
         
         chatInput.value = '';
         chatInput.disabled = true;
@@ -229,7 +246,7 @@ function initializeChat() {
 
         try {
             // 3. Отправить запрос на сервер
-            const userId = ChatSessionManager.getOrCreateUserId();
+            const userId = UserSessionManager.getOrCreateUserId();
             const response = await fetch('/api/chat', {
                 method: 'POST',
                 headers: {
@@ -269,7 +286,7 @@ function initializeChat() {
             }
 
             scrollToBottom();
-            ChatSessionManager.saveMessageToHistory(fullResponse, 'assistant');
+            UserSessionManager.saveMessageToHistory(fullResponse, 'assistant');
 
         } catch (error) {
             console.error('Chat error:', error);
@@ -279,32 +296,31 @@ function initializeChat() {
             removeEmojiIndicator(loadingIndicator);
             
             loadingIndicator.querySelector('p')!.textContent = errorMessage;
-            ChatSessionManager.saveMessageToHistory(errorMessage, 'assistant');
+            UserSessionManager.saveMessageToHistory(errorMessage, 'assistant');
             scrollToBottom();
         } finally {
             chatInput.disabled = false;
             
-            if (!isMobileDevice()) {
+            if (!isMobileDevice() && window.chatManager?.isOpen()) {
                 chatInput.focus();
             }
         }
     });
 
-    smartFocusManagement();
-
     // Запускаем периодическую проверку очистки (каждую минуту)
     setInterval(() => {
-        if (!ChatSessionManager.isSessionActive()) {
+        if (!UserSessionManager.isSessionActive()) {
             // Если сессия истекла, очищаем чат
             clearChatMessages();
         }
     }, 60 * 1000);
 
     showCleanupTimer();
+    smartFocusManagement();
 }
 
 function showCleanupTimer(): void {
-    const timeUntilCleanup = ChatSessionManager.getTimeUntilCleanup();
+    const timeUntilCleanup = UserSessionManager.getTimeUntilCleanup();
     const minutesLeft = Math.ceil(timeUntilCleanup / (60 * 1000));
     
     if (minutesLeft < 10) {
@@ -327,7 +343,7 @@ function showCleanupTimer(): void {
         document.body.appendChild(timer);
 
         setInterval(() => {
-            const newTimeLeft = ChatSessionManager.getTimeUntilCleanup();
+            const newTimeLeft = UserSessionManager.getTimeUntilCleanup();
             const newMinutesLeft = Math.ceil(newTimeLeft / (60 * 1000));
             
             if (newMinutesLeft <= 0) {
@@ -339,4 +355,5 @@ function showCleanupTimer(): void {
     }
 }
 
-document.addEventListener('DOMContentLoaded', initializeChat);
+// Экспортируем только initializeChat для использования в других модулях
+export { initializeChat };

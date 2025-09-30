@@ -4,10 +4,11 @@ import { join } from 'node:path';
 // --- Конфигурация сборки ---
 const SRC_UI_DIR = 'src/ui';
 const ENTRY_POINTS = [
-  join(SRC_UI_DIR, 'chat-session-manager.ts'),
+  join(SRC_UI_DIR, 'user-session-manager.ts'),
   join(SRC_UI_DIR, 'main-of-details.ts'),
   join(SRC_UI_DIR, 'tracker.ts'),
   join(SRC_UI_DIR, 'form-logic.ts'),
+  join(SRC_UI_DIR, 'chat-manager.ts'),
   join(SRC_UI_DIR, 'chat-logic.ts'),
 ];
 const HTML_FILES = [

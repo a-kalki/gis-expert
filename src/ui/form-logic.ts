@@ -1,5 +1,5 @@
 import { PhoneValidator } from '../domain/phone';
-import ChatSessionManager from './chat-session-manager.js';
+import UserSessionManager from './user-session-manager.js';
 
 export function showValidationError(element: HTMLElement, message: string) {
   const cardContent = element.querySelector('.card-content');
@@ -96,14 +96,14 @@ export function validateForm(form: HTMLFormElement): boolean {
 
 if (typeof window !== 'undefined' && typeof document !== 'undefined') {
   document.addEventListener('DOMContentLoaded', () => {
-    // Получаем userId из ChatSessionManager вместо URL параметров
-    const userId = ChatSessionManager.getOrCreateUserId();
+    // Получаем userId из UserSessionManager вместо URL параметров
+    const userId = UserSessionManager.getOrCreateUserId();
     
     // Находим поле userId в форме и устанавливаем значение
     const userIdField = document.getElementById('userId') as HTMLInputElement;
     if (userIdField) {
       userIdField.value = userId;
-      console.log('DEBUG: userId из ChatSessionManager:', userId);
+      console.log('DEBUG: userId из UserSessionManager:', userId);
     } else {
       console.warn('User ID field not found in form.');
     }
@@ -155,7 +155,7 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
         }
       }
 
-      // Убеждаемся, что userId всегда присутствует (из ChatSessionManager)
+      // Убеждаемся, что userId всегда присутствует (из UserSessionManager)
       data.userId = userId;
 
       const webhookUrl = __API_BASE_URL__ + '/api/submit-form';
@@ -174,7 +174,7 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
           form.reset();
           
           // Обновляем время активности после отправки формы
-          ChatSessionManager.updateLastActivity();
+          UserSessionManager.updateLastActivity();
         } else {
           alert('Ошибка при отправке анкеты. Пожалуйста, попробуйте еще раз.');
           console.error('Ошибка отправки формы:', response.status, response.statusText);
