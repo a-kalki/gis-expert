@@ -14,11 +14,11 @@
     "typescript": "^5"
   },
   "dependencies": {
-    "happy-dom": "^18.0.1",
     "libphonenumber-js": "^1.12.18",
     "openai": "^5.23.1"
   },
   "scripts": {
+    "happy-dom": "^18.0.1",
     "build:dev": "NODE_ENV=development bun run build.ts --dev",
     "build:prod": "NODE_ENV=production bun run build.ts --prod",
     "dev:server": "NODE_ENV=development bun --hot run src/api/server.ts",

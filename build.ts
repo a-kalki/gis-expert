@@ -16,6 +16,9 @@ const HTML_FILES = [
   join(SRC_UI_DIR, 'form.html'),
   join(SRC_UI_DIR, 'details.html'),
 ];
+const CSS_FILES = [
+  join(SRC_UI_DIR, 'index.css'),
+];
 
 // --- Получение аргументов командной строки ---
 const args = process.argv.slice(2);
@@ -52,6 +55,16 @@ async function copyHtmlFiles() {
   console.log('HTML файлы скопированы.');
 }
 
+// --- Копирование CSS файлов ---
+async function copyCssFiles() {
+  console.log('Копирование CSS файлов...');
+  for (const file of CSS_FILES) {
+    const dest = join(OUT_DIR, file.split('/').pop()!);
+    await cp(file, dest);
+  }
+  console.log('CSS файлы скопированы.');
+}
+
 // --- Сборка JavaScript/TypeScript ---
 async function buildJsTs() {
   console.log('Сборка JavaScript/TypeScript...');
@@ -83,6 +96,7 @@ async function runBuild() {
   try {
     await cleanAndCreateDir();
     await copyHtmlFiles();
+    await copyCssFiles();
     await buildJsTs();
     console.log('Сборка завершена успешно!');
   } catch (error: any) {
