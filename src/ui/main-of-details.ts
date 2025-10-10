@@ -1,4 +1,46 @@
+// Функция фильтрации отзывов
+export function initReviewsFilter(): void {
+  const filterButtons = document.querySelectorAll('.filter-btn');
+  
+  filterButtons.forEach(button => {
+    button.addEventListener('click', (e) => {
+      const target = e.target as HTMLButtonElement;
+      const type = target.dataset.filter;
+      
+      if (type) {
+        filterReviews(type, target);
+      }
+    });
+  });
+}
+
+function filterReviews(type: string, element: HTMLButtonElement): void {
+  // Обновляем активную кнопку
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.classList.remove('w3-black');
+    btn.classList.add('w3-light-grey');
+  });
+  element.classList.remove('w3-light-grey');
+  element.classList.add('w3-black');
+  
+  // Показываем/скрываем отзывы
+  const reviews = document.querySelectorAll('.review');
+  reviews.forEach(review => {
+    if (type === 'all' || review.getAttribute('data-review-type') === type) {
+      (review as HTMLElement).style.display = 'block';
+    } else {
+      (review as HTMLElement).style.display = 'none';
+    }
+  });
+}
+
 document.addEventListener('DOMContentLoaded', () => {
+  const allBtn = document.querySelector('.filter-btn.active');
+  if (allBtn) {
+    allBtn.classList.remove('w3-light-grey');
+    allBtn.classList.add('w3-black');
+  }
+
   const tabScrollPositions: { [key: string]: number } = {};
   let currentTabId: string = 'about-of-course'; // Вкладка по умолчанию
 
@@ -37,6 +79,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 6. Обновляем ID текущей вкладки
     currentTabId = tabName;
+
+    // 7. Если открыли вкладку с отзывами - инициализируем фильтры
+    if (tabName === 'reviews') {
+      setTimeout(() => {
+        initReviewsFilter();
+      }, 0);
+    }
   }
 
   // Используем делегирование событий для обработки кликов по вкладкам
