@@ -1,10 +1,11 @@
+const projectRoot = process.cwd();
 module.exports = {
   apps : [{
     name: "it-course-landing", // Имя вашего приложения
     script: "./src/api/server.ts",             // Исполняемый файл
     interpreter: "bun",        // Указываем, что скрипт должен запускаться через Bun
     args: "start:prod",        // Скрипт из package.json
-    cwd: "/srv/it-course-landing", // Укажите абсолютный путь к корневой директории вашего проекта
+    cwd: projectRoot,          // Укажите абсолютный путь к корневой директории вашего проекта
     instances: 1,              // Количество экземпляров приложения
     autorestart: true,         // Автоматический перезапуск при сбое
     watch: false,              // Отключить watch в продакшене
