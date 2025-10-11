@@ -67,4 +67,24 @@ export class UserEventsRepository {
   public getLatest(limit: number = 10): any[] {
     return this.db.prepare(`SELECT * FROM user_events ORDER BY received_at DESC LIMIT ?`).all(limit);
   }
+
+  public getFilteredEvents(filters: { userId?: string; pageName?: string; limit?: number }): any[] {
+    let query = 'SELECT * FROM user_events WHERE 1=1';
+    const params: any[] = [];
+
+    if (filters.userId) {
+      query += ' AND user_id = ?';
+      params.push(filters.userId);
+    }
+
+    if (filters.pageName) {
+      query += ' AND page_name = ?';
+      params.push(filters.pageName);
+    }
+
+    query += ' ORDER BY received_at DESC LIMIT ?';
+    params.push(filters.limit || 10);
+
+    return this.db.prepare(query).all(...params);
+  }
 }

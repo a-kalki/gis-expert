@@ -82,6 +82,13 @@
       background-color: #4CAF50;
       color: white;
     }
+    .checkbox-hint {
+      font-size: 0.9em;
+      color: #666;
+      font-style: italic;
+      margin-bottom: 12px;
+      display: block;
+    }
     @media (max-width: 600px) {
       .phone-input-container .w3-col {
         width: 30% !important;
@@ -109,7 +116,7 @@
 
   <div class="w3-card w3-margin-bottom w3-white">
     <div class="card-header">
-      <label for="name">1. Как к тебе обращаться?<span class="required-asterisk">*</span></label>
+      <label for="name">Как к тебе обращаться?<span class="required-asterisk">*</span></label>
     </div>
     <div class="card-content">
       <input type="text" id="name" name="name">
@@ -118,7 +125,7 @@
 
   <div class="w3-card w3-margin-bottom w3-white">
     <div class="card-header">
-      <label for="phone">2. Введи пожалуйста номер телефона<span class="required-asterisk">*</span></label>
+      <label for="phone">Введи пожалуйста номер телефона<span class="required-asterisk">*</span></label>
     </div>
     <div class="card-content">
       <div class="w3-row phone-input-container">
@@ -150,9 +157,10 @@
 
   <div class="w3-card w3-margin-bottom w3-white">
     <div class="card-header">
-      <label>3. Укажи предпочтительный способ связи<span class="required-asterisk">*</span></label>
+      <label>Укажи предпочтительный способ связи<span class="required-asterisk">*</span></label>
     </div>
     <div class="card-content">
+      <span class="checkbox-hint">✓ Можно выбрать несколько вариантов</span>
       <label><input class="w3-check" type="checkbox" name="contactMethod" value="Телефонный звонок"> Телефонный звонок</label><br>
       <label><input class="w3-check" type="checkbox" name="contactMethod" value="Общение через Telegram"> Общение через Telegram</label><br>
       <label><input class="w3-check" type="checkbox" name="contactMethod" value="Общение через WhatsApp"> Общение через WhatsApp</label><br>
@@ -161,16 +169,7 @@
 
   <div class="w3-card w3-margin-bottom w3-white">
     <div class="card-header">
-      <label for="promocode">4. Введи плз свой промокод (если он есть)</label>
-    </div>
-    <div class="card-content">
-      <input type="text" id="promocode" name="promocode">
-    </div>
-  </div>
-
-  <div class="w3-card w3-margin-bottom w3-white">
-    <div class="card-header">
-      <label>5. Как ты нашел нас?<span class="required-asterisk">*</span></label>
+      <label>Как ты нашел нас?<span class="required-asterisk">*</span></label>
     </div>
     <div class="card-content">
       <label><input class="w3-radio" type="radio" name="howFoundUs" value="Через знакомых"> Через знакомых</label><br>
@@ -184,9 +183,10 @@
 
   <div class="w3-card w3-margin-bottom w3-white">
     <div class="card-header">
-      <label>6. Почему мы заинтересовали тебя?<span class="required-asterisk">*</span></label>
+      <label>Почему мы заинтересовали тебя?<span class="required-asterisk">*</span></label>
     </div>
     <div class="card-content">
+      <span class="checkbox-hint">✓ Можно выбрать несколько вариантов</span>
       <label><input class="w3-check" type="checkbox" name="whyInterested" value="Так бесплатно же!"> Так бесплатно же!</label><br>
       <label><input class="w3-check" type="checkbox" name="whyInterested" value="Кажется вы профессионалы"> Кажется вы профессионалы</label><br>
       <label><input class="w3-check" type="checkbox" name="whyInterested" value="Понравился контент рекламы и/или сайта"> Понравился контент рекламы и/или сайта</label><br>
@@ -198,7 +198,7 @@
 
   <div class="w3-card w3-margin-bottom w3-white">
     <div class="card-header">
-      <label>7. Какой у тебя опыт программирования?<span class="required-asterisk">*</span></label>
+      <label>Какой у тебя опыт программирования?<span class="required-asterisk">*</span></label>
     </div>
     <div class="card-content">
       <label><input class="w3-radio" type="radio" name="programmingExperience" value="Я новичок, хочу начать"> Я новичок, хочу начать</label><br>
@@ -210,7 +210,7 @@
 
   <div class="w3-card w3-margin-bottom w3-white">
     <div class="card-header">
-      <label>8. Какой язык тебя интересует и почему?<span class="required-asterisk">*</span></label>
+      <label>Какой язык тебя интересует и почему?<span class="required-asterisk">*</span></label>
     </div>
     <div class="card-content">
       <label><input class="w3-radio" type="radio" name="languageInterest" value="Python: потому что он универсален (ИИ, веб, аналитика, ...)"> Python: потому что он универсален (ИИ, веб, аналитика, ...)</label><br>
@@ -222,7 +222,7 @@
 
   <div class="w3-card w3-margin-bottom w3-white">
     <div class="card-header">
-      <label>9. Какой формат обучения тебя интересует?<span class="required-asterisk">*</span></label>
+      <label>Какой формат обучения тебя интересует?<span class="required-asterisk">*</span></label>
     </div>
     <div class="card-content">
       <label><input class="w3-radio" type="radio" name="learningFormat" value="Офлайн: я живу в г. Уральск и хочу обучение по максимуму"> Офлайн: я живу в г. Уральск и хочу обучение по максимуму</label><br>
@@ -234,9 +234,10 @@
 
   <div class="w3-card w3-margin-bottom w3-white">
     <div class="card-header">
-      <label>10. Какой день недели для тебя предпочтителен?<span class="required-asterisk">*</span></label>
+      <label>Какой день недели для тебя предпочтителен?<span class="required-asterisk">*</span></label>
     </div>
     <div class="card-content">
+      <span class="checkbox-hint">✓ Нужно выбрать минимум два или "Любой день"</span>
       <label><input class="w3-check" type="checkbox" name="preferredDay" value="Любой день"> Любой день</label><br>
       <label><input class="w3-check" type="checkbox" name="preferredDay" value="Понедельник"> Понедельник</label><br>
       <label><input class="w3-check" type="checkbox" name="preferredDay" value="Вторник"> Вторник</label><br>
@@ -249,9 +250,10 @@
 
   <div class="w3-card w3-margin-bottom w3-white">
     <div class="card-header">
-      <label>11. Какое время занятий для тебя предпочтительно?<span class="required-asterisk">*</span></label>
+      <label>Какое время занятий для тебя предпочтительно?<span class="required-asterisk">*</span></label>
     </div>
     <div class="card-content">
+      <span class="checkbox-hint">✓ Можно выбрать несколько вариантов</span>
       <label><input class="w3-check" type="checkbox" name="preferredTime" value="Любое время"> Любое время</label><br>
       <label><input class="w3-check" type="checkbox" name="preferredTime" value="До 9 утра"> До 9 утра</label><br>
       <label><input class="w3-check" type="checkbox" name="preferredTime" value="9-11 утра"> 9-11 утра</label><br>

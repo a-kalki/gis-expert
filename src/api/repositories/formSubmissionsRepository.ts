@@ -12,7 +12,6 @@ export class FormSubmissionsRepository {
     name: string;
     phone: string;
     contactMethod: string;
-    promocode: string | null;
     howFoundUs: string;
     whyInterested: string;
     programmingExperience: string;
@@ -28,7 +27,6 @@ export class FormSubmissionsRepository {
           name,
           phone,
           contact_method,
-          promocode,
           how_found_us,
           why_interested,
           programming_experience,
@@ -42,7 +40,6 @@ export class FormSubmissionsRepository {
           @name,
           @phone,
           @contactMethod,
-          @promocode,
           @howFoundUs,
           @whyInterested,
           @programmingExperience,
@@ -58,7 +55,6 @@ export class FormSubmissionsRepository {
       "@name": formData.name,
       "@phone": formData.phone,
       "@contactMethod": formData.contactMethod,
-      "@promocode": formData.promocode || null,
       "@howFoundUs": formData.howFoundUs,
       "@whyInterested": formData.whyInterested,
       "@programmingExperience": formData.programmingExperience,
@@ -76,5 +72,25 @@ export class FormSubmissionsRepository {
 
   public getLatest(limit: number = 10): any[] {
     return this.db.prepare(`SELECT * FROM form_submissions ORDER BY submitted_at DESC LIMIT ?`).all(limit);
+  }
+
+  public getFilteredSubmissions(filters: { userId?: string; date?: string; limit?: number }): any[] {
+    let query = 'SELECT * FROM form_submissions WHERE 1=1';
+    const params: any[] = [];
+
+    if (filters.userId) {
+      query += ' AND user_id = ?';
+      params.push(filters.userId);
+    }
+
+    if (filters.date) {
+      query += ' AND DATE(submitted_at) = ?';
+      params.push(filters.date);
+    }
+
+    query += ' ORDER BY submitted_at DESC LIMIT ?';
+    params.push(filters.limit || 10);
+
+    return this.db.prepare(query).all(...params);
   }
 }

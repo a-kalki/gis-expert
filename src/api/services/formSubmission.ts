@@ -22,7 +22,6 @@ export async function saveFormData(db: Database, formData: any) {
     name: formData.name,
     phone: formData.phone,
     contactMethod: prepareValue(formData.contactMethod),
-    promocode: formData.promocode || null,
     howFoundUs: prepareValue(formData.howFoundUs),
     whyInterested: prepareValue(formData.whyInterested),
     programmingExperience: prepareValue(formData.programmingExperience),
