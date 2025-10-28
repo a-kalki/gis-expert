@@ -1,5 +1,5 @@
 import { Database } from 'bun:sqlite';
-import { UserEventsRepository } from '../src/api/repositories/userEventsRepository';
+import { UserEventsRepository } from '@course/api/repositories/userEventsRepository';
 
 function showHelp() {
   console.log(`

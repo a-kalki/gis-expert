@@ -1,5 +1,5 @@
 import { PhoneValidator } from '../domain/phone';
-import UserSessionManager from './user-session-manager.js';
+import UserSessionManager from '@app/ui/user-session-manager.js';
 
 export function showValidationError(element: HTMLElement, message: string) {
   const cardContent = element.querySelector('.card-content');
@@ -128,24 +128,28 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
       event.preventDefault();
 
       if (!validateForm(form)) {
-        // Валидация не прошла, форма не будет отправлена.
-        // Сообщение об ошибке уже показано и фокус установлен на первом невалидном поле.
+        console.log('Form validation failed.');
         return;
       }
 
+      // --- Сбор данных ---
       const formData = new FormData(form);
       const data: { [key: string]: string | string[] } = {};
+      
+      formData.forEach((value, key) => {
+        if (typeof value !== 'string') return; // Игнорируем файлы
 
-      const fieldNames = Array.from(new Set(Array.from(formData.keys())));
-
-      for (const key of fieldNames) {
-        const values = formData.getAll(key);
-        if (values.length > 1) {
-          data[key] = values;
+        const existing = data[key];
+        if (existing) {
+          if (Array.isArray(existing)) {
+            existing.push(value);
+          } else {
+            data[key] = [existing, value];
+          }
         } else {
-          data[key] = values[0];
+          data[key] = value;
         }
-      }
+      });
 
       // Форматируем телефонный номер
       if (phoneInput && countryCodeSelect) {
@@ -158,7 +162,7 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
       // Убеждаемся, что userId всегда присутствует (из UserSessionManager)
       data.userId = userId;
 
-      const webhookUrl = __API_BASE_URL__ + '/api/submit-form';
+      const webhookUrl = '/api/submit-form';
 
       try {
         const response = await fetch(webhookUrl, {

@@ -1,6 +1,6 @@
 import { cwd } from 'process';
 import { join } from 'path';
-import { Db } from '../src/api/db';
+import { Db } from '@app/db';
 
 function showHelp() {
   console.log(`
@@ -58,8 +58,8 @@ async function main() {
       console.log('📊 Статус миграций:');
       console.log(`✅ Примененные: ${migrationStatus.applied.length}`);
       console.log(`⏳ Ожидающие: ${migrationStatus.pending.length}`);
-      migrationStatus.applied.forEach(m => console.log(`   ✓ ${m}`));
-      migrationStatus.pending.forEach(m => console.log(`   ○ ${m}`));
+      migrationStatus.applied.forEach((m: string) => console.log(`   ✓ ${m}`));
+      migrationStatus.pending.forEach((m: string) => console.log(`   ○ ${m}`));
       return;
     }
 

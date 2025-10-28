@@ -13,7 +13,7 @@ export class OpenAIService extends AIService {
 
     protected async *generateResponse(userMessage: string, history: ChatMessage[]): AsyncGenerator<string> {
         try {
-            const prompt = this.buildPrompt(userMessage, history);
+        const fullPrompt = this.buildPrompt(lastMessages);
             
             const stream = await this.openai.chat.completions.create({
                 model: this.modelName,

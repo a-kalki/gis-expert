@@ -10,7 +10,7 @@ export class Db {
   }
 
   public connect(): Database {
-    if (!this.dbInstance || !this.dbInstance.open) {
+    if (!this.dbInstance) {
       try {
         this.dbInstance = new Database(this.dbPath);
       } catch (error: any) {
@@ -22,7 +22,7 @@ export class Db {
   }
 
   public close(): void {
-    if (this.dbInstance && this.dbInstance.open) {
+    if (this.dbInstance) {
       this.dbInstance.close();
       this.dbInstance = null;
       console.log('[DB] Database connection closed.');
@@ -31,7 +31,7 @@ export class Db {
 
   // --- Basic Database Operations ---
 
-  public run(sql: string, params?: any): Statement {
+  public run(sql: string, params?: any): import('bun:sqlite').Changes {
     const db = this.connect();
     const stmt = db.prepare(sql);
     return stmt.run(params);

@@ -360,10 +360,6 @@ describe('Валидация формы', () => {
   let window: any;
   let document: Document;
 
-  beforeEach(() => {
-    (global as any).__API_BASE_URL__ = 'http://test.local';
-  });
-
   describe('Функции валидации', () => {
     test('должна показывать ошибку валидации', () => {
       const { html } = FormFactory.createEmptyForm();
@@ -432,10 +428,6 @@ import { FormFactory } from './form-factory';
 describe('Интеграционные тесты формы', () => {
   let window: any;
   let document: Document;
-
-  beforeEach(() => {
-    (global as any).__API_BASE_URL__ = 'http://test.local';
-  });
 
   test('должна загружать реальный HTML формы', () => {
     const { html, form } = FormFactory.createEmptyForm();

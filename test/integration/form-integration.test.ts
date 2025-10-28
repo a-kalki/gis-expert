@@ -6,10 +6,6 @@ describe('Интеграционные тесты формы', () => {
   let window: any;
   let document: Document;
 
-  beforeEach(() => {
-    (global as any).__API_BASE_URL__ = 'http://test.local';
-  });
-
   test('должна загружать реальный HTML формы', () => {
     const { html, form } = FormFactory.createEmptyForm();
     window = createTestWindow(html);

@@ -1,5 +1,5 @@
 import { afterAll, beforeAll } from 'bun:test';
-import { Db } from '../../src/api/db';
+import { Db } from '@app/db';
 import { mkdtemp, rm } from 'fs/promises';
 import { join } from 'path';
 import { tmpdir } from 'os';

@@ -1,5 +1,5 @@
 // Модуль для сбора и отправки аналитики поведения пользователей
-import UserSessionManager from './user-session-manager.js';
+import UserSessionManager from '@app/ui/user-session-manager.js';
 
 console.log("Трекер аналитики загружен.");
 
@@ -145,34 +145,40 @@ function initSectionViewTimeObserver(): void {
 }
 
 /**
- * Инициализирует отслеживание переходов по вкладкам (для details.html)
+ * Инициализирует отслеживание переходов по вкладкам
  */
 function initTabTracking(): void {
-  console.log("Запущена логика отслеживания вкладок для details.html");
+  console.log("Запущена логика отслеживания вкладок");
   
+  // ХАРДКОД: определяем начальную вкладку по page-name
   let currentTab: string = 'unknown_tab';
-  const activeTabButton = document.querySelector('.tabs .tablink.w3-white');
-  if (activeTabButton) {
-    currentTab = activeTabButton.getAttribute('data-tabname') || 'unknown_tab';
+  
+  if (analyticsState.pageName === 'mission') {
+    currentTab = 'mission';
+  } else if (analyticsState.pageName === 'course-details') {
+    currentTab = 'about-of-course';
   }
+  
+  console.log('Хардкод: начальная вкладка установлена как:', currentTab);
 
+  // Отслеживаем клики по вкладкам
   document.body.addEventListener('click', (event: MouseEvent) => {
-    const tabButton: HTMLElement | null = (event.target as HTMLElement).closest('[data-tabname]');
+    const tabButton: HTMLElement | null = (event.target as HTMLElement).closest('.tablink[data-tabname]');
     if (!tabButton) return;
 
     const toTab: string | null = tabButton.getAttribute('data-tabname');
-    if (toTab === currentTab) return;
+    if (!toTab || toTab === currentTab) return;
 
     const eventData: NavigationEvent = {
       fromTab: currentTab,
-      toTab: toTab || 'unknown_tab',
+      toTab: toTab,
       scroll_perc: Math.round(analyticsState.scrollDepth_perc),
       timestamp: new Date().toISOString(),
     };
 
     analyticsState.navigationPath.push(eventData);
     console.log('Переход по вкладке:', eventData);
-    currentTab = toTab || 'unknown_tab';
+    currentTab = toTab;
   });
 }
 
@@ -198,6 +204,13 @@ function initLinkTracking(): void {
 }
 
 /**
+ * Проверяет, есть ли на странице вкладки для отслеживания
+ */
+function hasTabsToTrack(): boolean {
+  return document.querySelectorAll('[data-tabname], [data-tab]').length > 0;
+}
+
+/**
  * Запускает сбор всех основных метрик
  */
 function startMetricsCollection(): void {
@@ -220,8 +233,8 @@ function startMetricsCollection(): void {
     analyticsState.scrollDepth_perc = Math.max(analyticsState.scrollDepth_perc || 0, scrollPercent);
   }, { passive: true });
 
-  // Отслеживание вкладок для details.html
-  if (analyticsState.pageName === 'details') {
+  // Отслеживание вкладок для ВСЕХ страниц с табами
+  if (hasTabsToTrack()) {
     initTabTracking();
   }
 
@@ -258,14 +271,11 @@ function setupUnloadHandlers(): void {
     analyticsState.scrollDepth_perc = Math.round(analyticsState.scrollDepth_perc);
 
     // Если finalAction не был установлен ссылкой, оставляем 'close'
-    if (analyticsState.finalAction === 'close') {
-      // Для details.html добавляем информацию о текущей вкладке
-      if (analyticsState.pageName === 'details') {
-        const activeTabButton = document.querySelector('.tabs .tablink.w3-white');
-        if (activeTabButton) {
-          const currentTab = activeTabButton.getAttribute('data-tabname') || 'unknown_tab';
-          analyticsState.finalAction = `close_on_tab_${currentTab}`;
-        }
+    if (analyticsState.finalAction === 'close' && hasTabsToTrack()) {
+      // ХАРДКОД: используем последнюю вкладку из navigationPath
+      const lastNavigation = analyticsState.navigationPath[analyticsState.navigationPath.length - 1];
+      if (lastNavigation) {
+        analyticsState.finalAction = `close_on_tab_${lastNavigation.toTab}`;
       }
     }
 
@@ -304,7 +314,7 @@ function sendAnalyticsData(): void {
     deviceInfo: analyticsState.deviceInfo
   };
 
-  const webhookUrl: string = __API_BASE_URL__ + '/api/track';
+  const webhookUrl: string = '/api/track';
 
   try {
     // Используем sendBeacon для гарантированной отправки при уходе

@@ -1,139 +1,18 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta name="page-name" content="details">
+  <meta name="page-name" content="course-details">
   <meta name="page-variant" content="v1_initial">
   <meta charset="UTF-8">
   <title>Курсы программирования</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+  <link rel="stylesheet" href="/common.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
-  <style>
-    body {
-      max-width: 800px;
-      padding: 20px;
-      margin: 0 auto;
-    }
-    body, h1, h2, h3, h4, h5, h6, p, ul, ol, li, a, div, button, footer {
-        font-family: 'Montserrat', sans-serif;
-    }
-    footer {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      position: relative;
-    }
-    .footer-rights {
-      max-width: 70%;  /* немного уже, чтобы не пересекалось */
-      text-align: center;
-      margin: 0 auto;
-    }
-    .footer-button {
-      position: absolute;
-      right: 10px;
-    }
-    #toTopBtn {
-      position: absolute;
-      right: 10px;           /* прижать к правому краю */
-      top: 50%;
-      transform: translateY(-50%);
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      border: none;
-      background: #333;
-      color: white;
-      font-size: 18px;
-      cursor: pointer;
-    }
-
-    #toTopBtn:hover {
-      background: #555;
-    }
-    h1, h2, h3, h4, h5, h6 {
-      font-weight: 500;
-    }
-    .review {
-      margin-bottom: 2em;
-      padding-bottom: 1em;
-      border-bottom: 1px solid #eee;
-    }
-    .review:last-child {
-      border-bottom: none;
-    }
-    .review-header {
-      display: flex;
-      align-items: center;
-      margin-bottom: 1em;
-      gap: 8px;
-    }
-    .review-author {
-      margin: 0;
-      font-size: 1.5em;
-    }
-    .review-badge {
-      font-size: 0.8em;
-      opacity: 0.7;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
-    .badge-icon {
-      font-size: 1.1em;
-    }
-
-    .badge-student .badge-icon::before {
-      content: "🎓"; /* иконка выпускной шапочки */
-    }
-
-    .badge-team .badge-icon::before {
-      content: "👥"; /* иконка людей */
-    }
-    .filter-buttons {
-      margin-bottom: 2em;
-    }
-    .filter-buttons .w3-button {
-      margin-right: 8px;
-    }
-    .tabs {
-      margin: 32px 0px;
-    }
-    .tabs .tablink {
-      padding: 08px 12px;
-    }
-    .scrollable-tabs {
-      overflow-x: auto;
-      overflow-y: hidden;
-      white-space: nowrap;
-      -webkit-overflow-scrolling: touch;
-    }
-
-    .scrollable-tabs::-webkit-scrollbar {
-      display: none;
-    }
-    .scrollable-tabs {
-      -ms-overflow-style: none;
-      scrollbar-width: none;
-    }
-    .scrollable-tabs .w3-bar-item {
-      display: inline-block;
-      float: none;
-    }
-    blockquote {
-      border-left: 3px solid #666;
-      margin: 1.5em 10px;
-      padding: 0.5em 10px;
-      font-style: italic;
-      color: #555;
-    }
-    @media (max-width: 600px) {
-      h1 { font-size: 1.8em; }
-      h2 { font-size: 1.4em; }
-      h3 { font-size: 1.2em; }
-    }
-  </style>
+  <meta name="description" content="Страница с основной информацией бесплатных курсов программирования в г. Уральск">
+  <meta name="keywords" content="курсы, программирование, Казахстан, Уральск, коворкинг, менторство, обучение">
 </head>
 <body>
 
@@ -142,14 +21,16 @@
   <p>Здесь становятся программистами!</p>
 </header>
 
-<div class="tabs w3-bar w3-black w3-center scrollable-tabs">
-  <button class="w3-bar-item w3-button tablink w3-white" data-tabname="about-of-course">О курсах</button>
-  <button class="w3-bar-item w3-button tablink" data-tabname="about-of-me">Обо мне</button>
-  <button class="w3-bar-item w3-button tablink" data-tabname="reviews">Отзывы</button>
-  <button class="w3-bar-item w3-button tablink" data-tabname="ts">TypeScript</button>
-  <button class="w3-bar-item w3-button tablink" data-tabname="python">Python</button>
-  <button class="w3-bar-item w3-button tablink" data-tabname="contacts">Контакты</button>
-  <button class="w3-bar-item w3-button tablink" data-tabname="behind-the-scenes">Закулисье</button>
+<div class="tabs scrollable-tabs">
+  <div class="tabs-inner-wrapper">
+    <button class="tablink w3-white" data-tabname="about-of-course">О курсах</button>
+    <button class="tablink" data-tabname="about-of-me">Обо мне</button>
+    <button class="tablink" data-tabname="reviews">Отзывы</button>
+    <button class="tablink" data-tabname="ts">TypeScript</button>
+    <button class="tablink" data-tabname="python">Python</button>
+    <button class="tablink" data-tabname="contacts">Контакты</button>
+    <button class="tablink" data-tabname="behind-the-scenes">Закулисье</button>
+  </div>
 </div>
 
 <div id="about-of-course" class="tabcontent" style="display:block">
@@ -692,7 +573,7 @@
       <li>Какие дни недели обучения мне удобны?</li>
       <li>Какое время обучения мне удобно?</li>
     </ol>
-    <p>Знаешь ответы? Смело переходи по ссылке и заполняй <a href="/form" data-analytics-action="to_form_from_details">анкету</a>!</p>
+    <p>Знаешь ответы? Смело переходи по ссылке и заполняй <a href="/course/form" data-analytics-action="to_form_from_details">анкету</a>!</p>
     <h2>Связь</h2>
     <p>Хочешь знать какие курсы запускаются?</p>
     <p>У нас есть группа в телеграм. Когда будет набираться команда и запускаться курс, то мы сообщим об этом там. Присоединяйся.</p>
@@ -725,24 +606,26 @@
   </div>
 </div>
 
-<div class="tabs w3-bar w3-black w3-center scrollable-tabs">
-  <button class="w3-bar-item w3-button tablink w3-white" data-tabname="about-of-course">О курсах</button>
-  <button class="w3-bar-item w3-button tablink" data-tabname="about-of-me">Обо мне</button>
-  <button class="w3-bar-item w3-button tablink" data-tabname="reviews">Отзывы</button>
-  <button class="w3-bar-item w3-button tablink" data-tabname="ts">TypeScript</button>
-  <button class="w3-bar-item w3-button tablink" data-tabname="python">Python</button>
-  <button class="w3-bar-item w3-button tablink" data-tabname="contacts">Контакты</button>
-  <button class="w3-bar-item w3-button tablink" data-tabname="behind-the-scenes">Закулисье</button>
+<div class="tabs scrollable-tabs">
+  <div class="tabs-inner-wrapper">
+    <button class="tablink w3-white" data-tabname="about-of-course">О курсах</button>
+    <button class="tablink" data-tabname="about-of-me">Обо мне</button>
+    <button class="tablink" data-tabname="reviews">Отзывы</button>
+    <button class="tablink" data-tabname="ts">TypeScript</button>
+    <button class="tablink" data-tabname="python">Python</button>
+    <button class="tablink" data-tabname="contacts">Контакты</button>
+    <button class="tablink" data-tabname="behind-the-scenes">Закулисье</button>
+  </div>
 </div>
 
 <footer class="w3-container w3-center w3-padding-32 w3-black">
   <div class="footer-rights">© 2025 Все права принадлежат Нурболату :-).</div>
   <a href="#top" class="w3-button w3-circle w3-white footer-button">↑</a>
 </footer>
-
-<script type="module" src="user-session-manager.js"></script>
-<script type="module" src="main-of-details.js" defer></script>
-<script type="module" src="tracker.js" defer></script>
+<!-- Общие скрипты -->
+<script type="module" src="/user-session-manager.js"></script>
+<script type="module" src="/tab-manager.js"></script>
+<script type="module" src="/tracker.js"></script>
 
 </body>
 </html>

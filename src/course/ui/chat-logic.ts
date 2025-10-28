@@ -1,4 +1,4 @@
-import UserSessionManager from './user-session-manager.js';
+import UserSessionManager from '@app/ui/user-session-manager.js';
 
 // Конфигурация эмодзи-анимаций
 const EMOJI_ANIMATIONS = {

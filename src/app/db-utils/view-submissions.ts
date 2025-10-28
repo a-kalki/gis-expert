@@ -1,5 +1,5 @@
 import { Database } from 'bun:sqlite';
-import { FormSubmissionsRepository } from '../src/api/repositories/formSubmissionsRepository';
+import { FormSubmissionsRepository } from '@course/api/repositories/formSubmissionsRepository';
 
 function showHelp() {
   console.log(`

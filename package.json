@@ -1,5 +1,5 @@
 {
-  "name": "it-course-landing",
+  "name": "gis-expert",
   "module": "index.ts",
   "type": "module",
   "private": true,
@@ -25,7 +25,7 @@
     "db:backup:named": "bun run db-utils/backup-db.ts --name=pre-migration",
     "db:migrate": "NODE_ENV=production bun run db-utils/run-migrations.ts --force",
     "db:status": "NODE_ENV=production bun run db-utils/run-migrations.ts --status",
-    "dev:server": "NODE_ENV=development bun --hot run src/api/server.ts",
+    "dev:server": "NODE_ENV=development bun --hot run src/app/server.ts",
     "build:dev": "NODE_ENV=development bun run build.ts --dev",
     "start:dev": "bun run build:dev && bun run dev:server",
     "build:prod": "NODE_ENV=production bun run build.ts --prod",

@@ -1,16 +1,12 @@
 import { describe, it, test, expect, beforeEach, jest } from 'bun:test';
-import { createTestWindow } from '../../test/setup';
-import { FormFactory } from '../../test/utils/form-factory';
-import { hasValidationError, getValidationErrorText } from '../../test/utils/helpers';
+import { createTestWindow } from '../../../test/setup';
+import { FormFactory } from '../../../test/utils/form-factory';
+import { hasValidationError, getValidationErrorText } from '../../../test/utils/helpers';
 import { validateForm, showValidationError, clearValidationErrors } from './form-logic';
 
 describe('Валидация формы', () => {
   let window: any;
   let document: Document;
-
-  beforeEach(() => {
-    (global as any).__API_BASE_URL__ = 'http://test.local';
-  });
 
   describe('Функции валидации', () => {
     test('должна показывать ошибку валидации', () => {

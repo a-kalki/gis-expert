@@ -27,8 +27,8 @@ export abstract class AIService {
   }
 
   private async initialize() {
-    const systemPromptPath = resolve(process.cwd(), 'src/api/ai', 'ai-system-prompt.txt');
-    const contextPath = resolve(process.cwd(), 'src/api/ai', 'ai-context.txt');
+    const systemPromptPath = resolve(process.cwd(), 'src/course/api/ai', 'ai-system-prompt.txt');
+    const contextPath = resolve(process.cwd(), 'src/course/api/ai', 'ai-context.txt');
 
     try {
       const [systemPromptContent, aiContextContent] = await Promise.all([
