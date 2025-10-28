@@ -19,12 +19,12 @@
     "openai": "^5.23.1"
   },
   "scripts": {
-    "db:backup": "NODE_ENV=production bun run db-utils/backup-db.ts",
-    "db:backup:list": "bun run db-utils/backup-db.ts --list",
-    "db:backup:cleanup": "bun run db-utils/backup-db.ts --cleanup",
-    "db:backup:named": "bun run db-utils/backup-db.ts --name=pre-migration",
-    "db:migrate": "NODE_ENV=production bun run db-utils/run-migrations.ts --force",
-    "db:status": "NODE_ENV=production bun run db-utils/run-migrations.ts --status",
+    "db:backup": "NODE_ENV=production bun run src/app/db-utils/backup-db.ts",
+    "db:backup:list": "bun run src/app/db-utils/backup-db.ts --list",
+    "db:backup:cleanup": "bun run src/app/db-utils/backup-db.ts --cleanup",
+    "db:backup:named": "bun run src/app/db-utils/backup-db.ts --name=pre-migration",
+    "db:migrate": "NODE_ENV=production bun run src/app/db-utils/run-migrations.ts --force",
+    "db:status": "NODE_ENV=production bun run src/app/db-utils/run-migrations.ts --status",
     "dev:server": "NODE_ENV=development bun --hot run src/app/server.ts",
     "build:dev": "NODE_ENV=development bun run build.ts --dev",
     "start:dev": "bun run build:dev && bun run dev:server",

@@ -2,6 +2,8 @@ import { cwd } from 'process';
 import { join } from 'path';
 import { Db } from '@app/db';
 
+const migrationsDir = 'src/app/migrations';
+
 function showHelp() {
   console.log(`
 Использование: bun run db-utils/run-migrations.ts [опции]
@@ -14,10 +16,10 @@ function showHelp() {
   --help             Показать эту справку
 
 Примеры:
-  bun run db-utils/run-migrations.ts --status      # Показать статус
-  bun run db-utils/run-migrations.ts --force       # Запустить все миграции
-  bun run db-utils/run-migrations.ts --force --migration=002_remove_promocode.ts  # Конкретная миграция
-  bun run db-utils/run-migrations.ts --rollback    # Откатить последнюю миграцию
+  bun run src/app/db-utils/run-migrations.ts --status      # Показать статус
+  bun run src/app/db-utils/run-migrations.ts --force       # Запустить все миграции
+  bun run src/app/db-utils/run-migrations.ts --force --migration=002_remove_promocode.ts  # Конкретная миграция
+  bun run src/app/db-utils/run-migrations.ts --rollback    # Откатить последнюю миграцию
   `);
 }
 
@@ -39,9 +41,9 @@ async function main() {
   // Всегда показываем предупреждение для миграций без --force
   if (!forceRun && !status && !rollback) {
     console.error('❌ ОШИБКА: Запуск миграций требует флага --force');
-    console.error('   Используйте: bun run db-utils/run-migrations.ts --force');
-    console.error('   Или для проверки статуса: bun run db-utils/run-migrations.ts --status');
-    console.error('   Для справки: bun run db-utils/run-migrations.ts --help');
+    console.error('   Используйте: bun run src/app/db-utils/run-migrations.ts --force');
+    console.error('   Или для проверки статуса: bun src/app/run db-utils/run-migrations.ts --status');
+    console.error('   Для справки: bun run src/app/db-utils/run-migrations.ts --help');
     process.exit(1);
   }
 
@@ -76,7 +78,7 @@ async function main() {
     } else {
       // Запуск всех непримененных миграций
       console.log('🔄 Запуск всех непримененных миграций...');
-      await db.runMigrations('migrations');
+      await db.runMigrations(migrationsDir);
     }
 
     console.log('✅ Операция завершена успешно');
