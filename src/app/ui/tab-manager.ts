@@ -1,14 +1,14 @@
 const tabScrollPositions: Record<string, number> = {};
 
 let currentTabId: string = 'unknown_tab';
-const pageNameTag: HTMLMetaElement | null = document.querySelector('meta[name="page-name"]');
-if (pageNameTag?.content === 'mission') {
-  currentTabId = 'mission';
-} else if (pageNameTag?.content === 'course-details') {
-  currentTabId = 'about-of-course';
-}
 
-function openTab(tabName: string) {
+function openTab(tabName: string, updateHistory: boolean = true) {
+  // Проверяем существование вкладки
+  if (!isValidTab(tabName)) {
+    console.warn(`Вкладка "${tabName}" не найдена`);
+    return;
+  }
+
   // 1. Сохраняем текущую позицию прокрутки
   const currentScrollPosition = window.pageYOffset || document.documentElement.scrollTop;
   tabScrollPositions[currentTabId] = currentScrollPosition;
@@ -43,6 +43,11 @@ function openTab(tabName: string) {
 
   // 6. Обновляем ID текущей вкладки
   currentTabId = tabName;
+
+  // 7. Обновляем URL (если не блокировано)
+  if (updateHistory) {
+    updateURLWithTab(tabName);
+  }
 }
 
 function showToolbarScroll() {
@@ -71,12 +76,69 @@ function showToolbarScroll() {
   });
 }
 
+/**
+ * Обрабатывает изменения URL (навигация по истории)
+ */
+function handleURLChange(): void {
+  const tabFromURL = getTabFromURL();
+  
+  if (tabFromURL && tabFromURL !== currentTabId && isValidTab(tabFromURL)) {
+    // Открываем вкладку из URL без обновления истории (чтобы избежать цикла)
+    openTab(tabFromURL, false);
+  }
+}
+
+/**
+ * Обновляет URL с хэшем вкладки
+ */
+function updateURLWithTab(tabName: string): void {
+  const newUrl = `${window.location.pathname}#${tabName}`;
+  window.history.replaceState(null, '', newUrl);
+}
+
+/**
+ * Получает имя вкладки из URL хэша
+ */
+function getTabFromURL(): string | null {
+  const hash = window.location.hash;
+  if (hash && hash.startsWith('#')) {
+    return hash.substring(1); // Убираем # из начала
+  }
+  return null;
+}
+
+/**
+ * Проверяет существование вкладки с указанным именем
+ */
+function isValidTab(tabName: string): boolean {
+  return document.getElementById(tabName) !== null;
+}
+
 // Инициализация при загрузке
 document.addEventListener('DOMContentLoaded', () => {
-  // Автоматически определяем первую вкладку
-  const firstTab = document.querySelector('.tabcontent[style*="display:block"]');
-  if (firstTab) {
-    currentTabId = firstTab.id;
+  // Определяем начальную вкладку по приоритету:
+  // 1. Из URL
+  // 2. Из открытой вкладки на странице
+  // 3. По умолчанию "mission"
+  
+  const urlTab = getTabFromURL();
+  const visibleTab = document.querySelector('.tabcontent[style*="display:block"]') as HTMLElement;
+  
+  if (urlTab && isValidTab(urlTab)) {
+    // Вкладка из URL имеет высший приоритет
+    currentTabId = urlTab;
+    openTab(urlTab, false); // false - чтобы не обновлять URL повторно
+  } else if (visibleTab) {
+    // Используем вкладку, которая уже открыта на странице
+    currentTabId = visibleTab.id;
+  } else {
+    // fallback - первая вкладка
+    const pageNameTag: HTMLMetaElement | null = document.querySelector('meta[name="page-name"]');
+    if (pageNameTag?.content === 'mission') {
+      currentTabId = 'mission';
+    } else if (pageNameTag?.content === 'course-details') {
+      currentTabId = 'about-of-course';
+    }
   }
 
   // Обработчик кликов по вкладкам для ВСЕХ контейнеров
@@ -87,11 +149,14 @@ document.addEventListener('DOMContentLoaded', () => {
       if (tabButton) {
         const tabName = tabButton.getAttribute('data-tabname');
         if (tabName) {
-          openTab(tabName);
+          openTab(tabName); // updateHistory = true по умолчанию
         }
       }
     });
   });
+
+  // Слушаем изменения URL (навигация назад/вперед)
+  window.addEventListener('hashchange', handleURLChange);
 
   // Показываем скроллбар для ВСЕХ вкладок на странице
   showToolbarScroll();
