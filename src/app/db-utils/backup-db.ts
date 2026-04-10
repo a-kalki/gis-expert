@@ -31,11 +31,12 @@ function ensureBackupDir(): string {
 }
 
 function createBackup(backupName?: string): void {
-  const sourceDb = join(process.cwd(), 'course.sqlite');
+  const dbPath = process.env.DB_PATH || 'course.sqlite';
+  const sourceDb = join(process.cwd(), dbPath);
   
   if (!existsSync(sourceDb)) {
-    console.error('❌ Source database file not found:', sourceDb);
-    process.exit(1);
+    console.log('ℹ️  Source database file not found, skipping backup.');
+    return;
   }
 
   const backupDir = ensureBackupDir();
