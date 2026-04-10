@@ -14,8 +14,9 @@
     "typescript": "^5"
   },
   "dependencies": {
-    "libphonenumber-js": "^1.12.18",
     "happy-dom": "^18.0.1",
+    "libphonenumber-js": "^1.12.18",
+    "marked": "^18.0.0",
     "openai": "^5.23.1"
   },
   "scripts": {

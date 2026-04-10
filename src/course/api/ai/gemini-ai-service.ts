@@ -134,16 +134,14 @@ export class GoogleAIService extends AIService {
     }
 
     private async *streamText(text: string): AsyncGenerator<string> {
-        // Более плавный стриминг
-        const sentences = text.split(/(?<=[.!?])\s+/);
+        // Эмулируем плавное появление текста без принудительных переносов
+        const words = text.split(' ');
         
-        for (const sentence of sentences) {
-            const words = sentence.split(' ');
-            for (const word of words) {
-                yield word + ' ';
-                await new Promise(resolve => setTimeout(resolve, 30));
-            }
-            yield '\n'; // Добавляем перенос после предложений
+        for (const word of words) {
+            yield word + ' ';
+            // Случайная задержка для большей естественности (от 10 до 40 мс)
+            const delay = Math.floor(Math.random() * 30) + 10;
+            await new Promise(resolve => setTimeout(resolve, delay));
         }
     }
 

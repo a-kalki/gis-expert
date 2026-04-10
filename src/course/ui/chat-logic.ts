@@ -1,4 +1,12 @@
 import UserSessionManager from '@app/ui/user-session-manager.js';
+import { marked } from 'marked';
+
+// Настройка marked для безопасности (ограничиваем некоторые элементы, если нужно)
+// Для базового чата оставляем дефолтные настройки
+marked.setOptions({
+    breaks: true, // Включаем перенос строк с помощью одного \n
+    gfm: true     // GitHub Flavored Markdown
+});
 
 // Конфигурация эмодзи-анимаций
 const EMOJI_ANIMATIONS = {
@@ -71,6 +79,13 @@ function removeEmojiIndicator(messageElement: HTMLDivElement): void {
     }
 }
 
+function formatMarkdown(text: string): string {
+    if (!text) return '';
+    // Используем marked для парсинга, отключаем парсинг опасного HTML если нужно
+    // as string добавлен для TypeScript, так как parse может возвращать Promise при асинхронных плагинах
+    return marked.parse(text) as string;
+}
+
 function appendMessage(text: string, sender: 'user' | 'assistant', isLoading = false): HTMLDivElement {
     const messageElement = document.createElement('div');
     messageElement.classList.add('message');
@@ -96,12 +111,19 @@ function appendMessage(text: string, sender: 'user' | 'assistant', isLoading = f
         contentContainer.appendChild(emojiIndicator);
     }
 
-    const p = document.createElement('p');
-    p.textContent = text;
-    p.style.margin = '0';
-    p.style.flex = '1';
+    const messageContent = document.createElement('div');
+    messageContent.classList.add('message-content');
     
-    contentContainer.appendChild(p);
+    if (sender === 'assistant' && !isLoading) {
+        messageContent.innerHTML = formatMarkdown(text);
+    } else {
+        // Для пользователя и лоадера используем простой параграф
+        const p = document.createElement('p');
+        p.textContent = text;
+        messageContent.appendChild(p);
+    }
+    
+    contentContainer.appendChild(messageContent);
     messageElement.appendChild(contentContainer);
 
     if (sender === 'user') {
@@ -127,6 +149,7 @@ function appendMessage(text: string, sender: 'user' | 'assistant', isLoading = f
     }
     
     (messageElement as any)._emojiIndicator = emojiIndicator;
+    (messageElement as any)._messageContent = messageContent;
 
     return messageElement;
 }
@@ -272,8 +295,8 @@ function initializeChat() {
             removeEmojiIndicator(loadingIndicator);
 
             // Очищаем текст "Думаю..." и начинаем вывод ответа
-            const contentP = loadingIndicator.querySelector('p')!;
-            contentP.textContent = '';
+            const messageContent = (loadingIndicator as any)._messageContent as HTMLDivElement;
+            messageContent.innerHTML = '';
 
             while (true) {
                 const { done, value } = await reader.read();
@@ -281,7 +304,9 @@ function initializeChat() {
                 
                 const chunk = decoder.decode(value, { stream: true });
                 fullResponse += chunk;
-                contentP.textContent = fullResponse;
+                // Парсим Markdown в реальном времени на каждом чанке. 
+                // Это предотвращает резкий скачок верстки в конце и позволяет читать текст с правильным форматированием по мере его появления.
+                messageContent.innerHTML = formatMarkdown(fullResponse);
                 scrollToBottom();
             }
 
@@ -295,7 +320,8 @@ function initializeChat() {
             stopEmojiAnimation(loadingIndicator);
             removeEmojiIndicator(loadingIndicator);
             
-            loadingIndicator.querySelector('p')!.textContent = errorMessage;
+            const messageContent = (loadingIndicator as any)._messageContent as HTMLDivElement;
+            messageContent.innerHTML = `<p>${errorMessage}</p>`;
             UserSessionManager.saveMessageToHistory(errorMessage, 'assistant');
             scrollToBottom();
         } finally {
